@@ -6,7 +6,7 @@
 
 *This documentation utilizes the elecanisms git repository that can be found [here](https://github.com/OlinElecanisms/elecanisms).*
 
-###Installing Build Toolss
+###Installing Build Tools
 1. Download the installer for your desired operating system [here](http://www.microchip.com/compilers).
 2. For 64-bit Linux, you may need to install some libraries to allow for 32-bit compatibility. Follow the commands [here](http://askubuntu.com/questions/297151/how-to-run-32-bit-programs-on-a-64-bit-system).
 3. Run the installer and select the default options.
