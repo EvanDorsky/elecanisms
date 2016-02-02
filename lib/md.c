@@ -27,11 +27,12 @@
 #include "common.h"
 #include "md.h"
 
-_MD md1, md2;
+_MD md1, md2, mdp;
 
 void init_md(void) {
     md_init(&md1, &D[7], &D[8], 1e3, &oc7);
     md_init(&md2, &D[5], &D[6], 1e3, &oc5);
+    md_init(&mdp, NULL, NULL, 1e3, NULL);
 }
 
 void md_init(_MD *self, _PIN *pin1, _PIN *pin2, uint16_t freq, _OC *oc) {
@@ -40,21 +41,45 @@ void md_init(_MD *self, _PIN *pin1, _PIN *pin2, uint16_t freq, _OC *oc) {
     self->freq = freq;
     self->pins[0] = pin1;
     self->pins[1] = pin2;
+    self->braked = 0;
     self->oc = oc;
 
-    oc_pwm(self->oc, self->pins[0], NULL, freq, 0);
-    pin_digitalOut(self->pins[1]);
-    pin_clear(self->pins[1]);
+    if (self == &mdp) {
+        oc_pwm(self->oc, self->pins[0], NULL, freq, 0);
+        pin_digitalOut(self->pins[1]);
+        pin_clear(self->pins[1]);
+    }
 }
 
 void md_free(_MD *self) {
     // clear owned pins/oc's
 }
 
+void md_brake(_MD *self) {
+    self->braked = 1;
+    if (self == &mdp) {
+        md_brake(&md1);
+        md_brake(&md2);
+    } else {
+        pin_clear(self->pins[0]);
+        pin_clear(self->pins[1]);
+    }
+}
+
+void md_run(_MD *self) {
+    self->braked = 0;
+    md_velocity(self, self->speed, self->dir);
+}
+
 void md_speed(_MD *self, uint16_t speed) {
     self->speed = speed;
 
-    pin_write(self->pins[self->dir], speed);
+    if (self == &mdp) {
+        md_speed(&md1, self->speed);
+        md_speed(&md2, self->speed);
+    } else if (!self->braked) {
+        pin_write(self->pins[self->dir], speed);
+    }
 }
 
 void md_direction(_MD *self, uint8_t dir) {
@@ -63,13 +88,20 @@ void md_direction(_MD *self, uint8_t dir) {
     }
     self->dir = dir;
 
-    oc_free(self->oc);
-    oc_pwm(self->oc, self->pins[dir], NULL, self->freq, self->speed);
+    if (self == &mdp) {
+        md_brake(&mdp);
+        md_direction(&md1, self->dir);
+        md_direction(&md2, self->dir);
+        md_run(&mdp);
+    } else if (!self->braked) {
+        oc_free(self->oc);
+        oc_pwm(self->oc, self->pins[dir], NULL, self->freq, self->speed);
 
-    pin_clear(self->pins[!dir]);
+        pin_clear(self->pins[!dir]);
+    }
 }
 
-void md_velocity(_MD *self, uint16_t speed, uint16_t dir) {
+void md_velocity(_MD *self, uint16_t speed, uint8_t dir) {
     md_speed(self, speed);
     md_direction(self, dir);
 }

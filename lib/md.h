@@ -37,17 +37,18 @@ typedef struct {
     uint8_t dir;
     uint16_t speed;
     uint16_t freq;
+    uint8_t braked;
     _PIN *pins[2];
     _OC *oc;
 } _MD;
 
-extern _MD md1, md2;
+extern _MD md1, md2, mdp;
 
 void md_init(_MD *self, _PIN *pin1, _PIN *pin2, uint16_t freq, _OC *oc);
 void md_free();
 
 void md_speed(_MD *self, uint16_t speed);
 void md_direction(_MD *self, uint8_t dir);
-void md_velocity(_MD *self, uint16_t speed, uint16_t dir);
+void md_velocity(_MD *self, uint16_t speed, uint8_t dir);
 
 #endif
