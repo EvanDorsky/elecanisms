@@ -6,6 +6,7 @@
 #include "usb.h"
 #include "pin.h"
 #include "spi.h"
+#include "enc.h"
 
 #define TOGGLE_LED1         1
 #define TOGGLE_LED2         2
@@ -66,7 +67,8 @@ void VendorRequests(void) {
             BD[EP0IN].status = 0xC8;         // send packet as DATA1, set UOWN bit
             break;
         case ENC_READ_REG:
-            result = enc_readReg(USB_setup.wValue);
+            result = enc_angle(&enc);
+            // result = enc_readReg(USB_setup.wValue);
             BD[EP0IN].address[0] = result.b[0];
             BD[EP0IN].address[1] = result.b[1];
             BD[EP0IN].bytecount = 2;         // set EP0 IN byte count to 1
@@ -116,6 +118,7 @@ int16_t main(void) {
     init_ui();
     init_pin();
     init_spi();
+    init_enc();
 
     ENC_MISO = &D[1];
     ENC_MOSI = &D[0];

@@ -26,6 +26,7 @@ env.Program('encodertest', ['encodertest.c',
                         'usb.c', 
                         '../lib/ui.c', 
                         '../lib/pin.c', 
+						'../lib/enc.c',
                         '../lib/spi.c',
                         '../lib/common.c'])
 
