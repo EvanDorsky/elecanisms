@@ -48,8 +48,7 @@ void md_init(_MD *self, _PIN *pin1, _PIN *pin2, uint16_t freq, _OC *oc) {
         oc_pwm(self->oc, self->pins[0], &timer5, freq, 0);
         OC5CON2 = 0x000F; //synchronize to timer5
         OC7CON2 = 0x000F;
-        pin_digitalOut(self->pins[1]);
-        pin_clear(self->pins[1]);
+        pin_set(self->pins[1]);
     }
 }
 
@@ -103,7 +102,7 @@ void md_direction(_MD *self, uint8_t dir) {
         oc_pwm(self->oc, self->pins[dir], &timer5, self->freq, self->speed);
         OC5CON2 = 0x000F; //synchronize to timer5
         OC7CON2 = 0x000F;
-        pin_clear(self->pins[!dir]);
+        pin_set(self->pins[!dir]);
     }
 }
 
