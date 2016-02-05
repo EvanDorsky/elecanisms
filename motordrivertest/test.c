@@ -4,32 +4,31 @@
 #include "ui.h"
 #include "oc.h"
 #include "pin.h"
+#include "md.h"
 #include "timer.h"
 
+uint8_t direction = 0;
 int16_t main(void) {
     init_clock();
     init_ui();
     init_timer();
     init_pin();
     init_oc();
+    init_md();
 
+    led_on(&led2);
     led_on(&led3);
 
     timer_setPeriod(&timer1, 0.5);
     timer_start(&timer1);
 
-    pin_digitalOut(&D[7]);
-    pin_digitalOut(&D[8]);
-
-    pin_set(&D[7]);
-    pin_clear(&D[8]);
-
     while (1) {
         if (timer_flag(&timer1)) {
             timer_lower(&timer1);
+            direction = !direction;
 
-            pin_toggle(&D[7]);
-            pin_toggle(&D[8]);
+            md_speed(&mdp, 0x8000);
+            md_direction(&mdp, direction);
         }
     }
 }
