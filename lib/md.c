@@ -31,11 +31,11 @@ _MD md1, md2, mdp;
 
 void __md_setpins(_MD *self) {
     if (!self->braked) {
-        pin_write(self->pins[self->dir], speed);
+        pin_write(self->pins[self->dir], self->speed);
         pin_write(self->pins[!self->dir], 1);
     } else {
-        pin_write(self->pins[self->dir], 0);
-        pin_write(self->pins[!self->dir], 0);
+        pin_write(self->pins[self->dir], self->brakeType);
+        pin_write(self->pins[!self->dir], self->brakeType);
     }
 }
 
