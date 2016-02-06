@@ -88,7 +88,7 @@ void md_run(_MD *self) {
         return;
     }
 
-    __md_setpins(&self);
+    __md_setpins(self);
 }
 
 void md_brakeType(_MD *self, uint8_t type) {
