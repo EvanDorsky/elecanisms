@@ -76,8 +76,8 @@ void md_brake(_MD *self) {
         return;
     }
     
-    pin_write(self->pins[0], 0);
-    pin_write(self->pins[1], 0);
+    pin_write(self->pins[0], self->brakeType);
+    pin_write(self->pins[1], self->brakeType);
 }
 
 void md_run(_MD *self) {
@@ -92,12 +92,11 @@ void md_run(_MD *self) {
 }
 
 void md_brakeType(_MD *self, uint8_t type) {
-    self->braked = 1;
     self->brakeType = type;
 
     if (self == &mdp) {
-        md_brakeType(&md1);
-        md_brakeType(&md2);
+        md_brakeType(&md1, type);
+        md_brakeType(&md2, type);
         return;
     }
 }
