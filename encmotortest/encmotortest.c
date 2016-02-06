@@ -7,6 +7,7 @@
 #include "pin.h"
 #include "spi.h"
 #include "enc.h"
+#include "md.h"
 
 #define TOGGLE_LED1         1
 #define TOGGLE_LED2         2
@@ -93,12 +94,21 @@ int16_t main(void) {
     init_pin();
     init_spi();
     init_enc();
+    init_oc();
+    init_md();
 
     InitUSB();
     while (USB_USWSTAT!=CONFIG_STATE) {
         ServiceUSB();
     }
+
+    md_velocity(&mdp, 0x0fff, 0);
     while (1) {
+        if (!sw_read(&sw1)) {
+            md_run(&mdp);
+        } else {
+            md_brake(&mdp);
+        }
         ServiceUSB();
     }
 }
