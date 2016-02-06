@@ -102,7 +102,7 @@ void md_brakeType(_MD *self, uint8_t type) {
 }
 
 void md_speed(_MD *self, uint16_t speed) {
-    self->speed = speed;
+    self->speed = ~speed;
 
     if (self == &mdp) {
         md_speed(&md1, self->speed);
