@@ -12,15 +12,14 @@
 #define TOGGLE_LED2         2
 #define READ_SW1            3
 #define ENC_WRITE_REG       4
-#define ENC_READ_REG        5
+#define ENC_READ_ANGLE      5
 #define TOGGLE_LED3         8 
 #define READ_SW2            9
 #define READ_SW3            10
 
 #define REG_MAG_ADDR        0x3FFE
 
-_PIN *ENC_SCK, *ENC_MISO, *ENC_MOSI;
-_PIN *ENC_NCS;
+_PIN *ENC_SCK, *ENC_MISO, *ENC_MOSI, *ENC_NCS;
 
 void VendorRequests(void) {
     WORD32 address;
@@ -29,51 +28,50 @@ void VendorRequests(void) {
     switch (USB_setup.bRequest) {
         case TOGGLE_LED1:
             led_toggle(&led1);
-            BD[EP0IN].bytecount = 0;         // set EP0 IN byte count to 0
-            BD[EP0IN].status = 0xC8;         // send packet as DATA1, set UOWN bit
+            BD[EP0IN].bytecount = 0;
+            BD[EP0IN].status = 0xC8;
             break;
         case TOGGLE_LED2:
             led_toggle(&led2);
-            BD[EP0IN].bytecount = 0;         // set EP0 IN byte count to 0
-            BD[EP0IN].status = 0xC8;         // send packet as DATA1, set UOWN bit
+            BD[EP0IN].bytecount = 0;
+            BD[EP0IN].status = 0xC8;
             break;
         case READ_SW1:
             BD[EP0IN].address[0] = (uint8_t)sw_read(&sw1);
-            BD[EP0IN].bytecount = 1;         // set EP0 IN byte count to 1
-            BD[EP0IN].status = 0xC8;         // send packet as DATA1, set UOWN bit
+            BD[EP0IN].bytecount = 1;
+            BD[EP0IN].status = 0xC8;
             break;
-        case ENC_READ_REG:
+        case ENC_READ_ANGLE:
             result = enc_angle(&enc);
-            // result = enc_readReg(USB_setup.wValue);
             BD[EP0IN].address[0] = result.b[0];
             BD[EP0IN].address[1] = result.b[1];
-            BD[EP0IN].bytecount = 2;         // set EP0 IN byte count to 1
-            BD[EP0IN].status = 0xC8;         // send packet as DATA1, set UOWN bit
+            BD[EP0IN].bytecount = 2;
+            BD[EP0IN].status = 0xC8;
             break;
         case TOGGLE_LED3:
             led_toggle(&led3);
-            BD[EP0IN].bytecount = 0;         // set EP0 IN byte count to 0
-            BD[EP0IN].status = 0xC8;         // send packet as DATA1, set UOWN bit
+            BD[EP0IN].bytecount = 0;
+            BD[EP0IN].status = 0xC8;
             break;
         case READ_SW2:
             BD[EP0IN].address[0] = (uint8_t)sw_read(&sw2);
-            BD[EP0IN].bytecount = 1;         // set EP0 IN byte count to 1
-            BD[EP0IN].status = 0xC8;         // send packet as DATA1, set UOWN bit
+            BD[EP0IN].bytecount = 1;
+            BD[EP0IN].status = 0xC8;
             break;
         case READ_SW3:
             BD[EP0IN].address[0] = (uint8_t)sw_read(&sw3);
-            BD[EP0IN].bytecount = 1;         // set EP0 IN byte count to 1
-            BD[EP0IN].status = 0xC8;         // send packet as DATA1, set UOWN bit
+            BD[EP0IN].bytecount = 1;
+            BD[EP0IN].status = 0xC8;
             break;
         default:
-            USB_error_flags |= 0x01;    // set Request Error Flag
+            USB_error_flags |= 0x01;
     }
 }
 
 void VendorRequestsIn(void) {
     switch (USB_request.setup.bRequest) {
         default:
-            USB_error_flags |= 0x01;                    // set Request Error Flag
+            USB_error_flags |= 0x01;
     }
 }
 
@@ -96,21 +94,11 @@ int16_t main(void) {
     init_spi();
     init_enc();
 
-    ENC_MISO = &D[1];
-    ENC_MOSI = &D[0];
-    ENC_SCK = &D[2];
-    ENC_NCS = &D[3];
-
-    pin_digitalOut(ENC_NCS);
-    pin_set(ENC_NCS);
-
-    spi_open(&spi1, ENC_MISO, ENC_MOSI, ENC_SCK, 2e6);
-
-    InitUSB();                              // initialize the USB registers and serial interface engine
-    while (USB_USWSTAT!=CONFIG_STATE) {     // while the peripheral is not configured...
-        ServiceUSB();                       // ...service USB requests
+    InitUSB();
+    while (USB_USWSTAT!=CONFIG_STATE) {
+        ServiceUSB();
     }
     while (1) {
-        ServiceUSB();                       // service any pending USB requests
+        ServiceUSB();
     }
 }
