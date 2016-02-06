@@ -31,11 +31,11 @@ _MD md1, md2, mdp;
 
 void __md_setpins(_MD *self) {
     if (!self->braked) {
-        pin_write(self->pins[self->dir], speed);
+        pin_write(self->pins[self->dir], self->speed);
         pin_write(self->pins[!self->dir], 1);
     } else {
-        pin_write(self->pins[self->dir], 0);
-        pin_write(self->pins[!self->dir], 0);
+        pin_write(self->pins[self->dir], self->brakeType);
+        pin_write(self->pins[!self->dir], self->brakeType);
     }
 }
 
@@ -83,12 +83,12 @@ void md_brake(_MD *self) {
 void md_run(_MD *self) {
     self->braked = 0;
     if (self == &mdp) {
-        md_brake(&md1);
-        md_brake(&md2);
+        md_run(&md1);
+        md_run(&md2);
         return;
     }
 
-    __md_setpins(&self);
+    __md_setpins(self);
 }
 
 void md_brakeType(_MD *self, uint8_t type) {
@@ -102,7 +102,7 @@ void md_brakeType(_MD *self, uint8_t type) {
 }
 
 void md_speed(_MD *self, uint16_t speed) {
-    self->speed = speed;
+    self->speed = ~speed;
 
     if (self == &mdp) {
         md_speed(&md1, self->speed);
