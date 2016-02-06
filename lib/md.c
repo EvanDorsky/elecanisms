@@ -83,8 +83,8 @@ void md_brake(_MD *self) {
 void md_run(_MD *self) {
     self->braked = 0;
     if (self == &mdp) {
-        md_brake(&md1);
-        md_brake(&md2);
+        md_run(&md1);
+        md_run(&md2);
         return;
     }
 
