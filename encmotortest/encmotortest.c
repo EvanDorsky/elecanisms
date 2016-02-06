@@ -2,6 +2,7 @@
 #include <stdint.h>
 #include "config.h"
 #include "common.h"
+#include "timer.h"
 #include "ui.h"
 #include "usb.h"
 #include "pin.h"
@@ -90,6 +91,7 @@ void VendorRequestsOut(void) {
 
 int16_t main(void) {
     init_clock();
+    init_timer();
     init_ui();
     init_pin();
     init_spi();
@@ -102,7 +104,9 @@ int16_t main(void) {
         ServiceUSB();
     }
 
-    md_velocity(&mdp, 0x0fff, 0);
+    led_on(&led3);
+
+    md_velocity(&mdp, 0x2000, 0);
     while (1) {
         if (!sw_read(&sw1)) {
             md_run(&mdp);
