@@ -60,7 +60,10 @@ void enc_init(_ENC *self, _SPI *spi, _PIN *MISO, _PIN *MOSI, _PIN *SCK, _PIN *NC
     self->SCK = SCK;
     self->NCS = NCS;
 
-    spi_open(self->spi, self->MISO, self->MOSI, self->SCK, 2e6);
+    pin_digitalOut(self->NCS);
+    pin_set(self->NCS);
+
+    spi_open(self->spi, self->MISO, self->MOSI, self->SCK, 2e6, 1);
 }
 
 void enc_free(_ENC *self) {
