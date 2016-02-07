@@ -89,6 +89,7 @@ void VendorRequestsOut(void) {
 //    }
 }
 
+uint8_t brakeType = 0;
 int16_t main(void) {
     init_clock();
     init_timer();
@@ -106,13 +107,27 @@ int16_t main(void) {
 
     led_on(&led3);
 
-    md_velocity(&mdp, 0x2000, 0);
+    md_velocity(&mdp, 0x8000, 1);
+
+    timer_setPeriod(&timer2, 0.5);
+    timer_start(&timer2);
+
     while (1) {
         if (!sw_read(&sw1)) {
             md_run(&mdp);
         } else {
             md_brake(&mdp);
         }
+
+        if (timer_flag(&timer2)) {
+            timer_lower(&timer2);
+
+            brakeType = !brakeType;
+            
+            led_write(&led1, brakeType);
+            md_brakeType(&mdp, brakeType);
+        }
+
         ServiceUSB();
     }
 }
