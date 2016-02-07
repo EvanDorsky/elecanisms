@@ -32,7 +32,7 @@ _MD md1, md2, mdp;
 void __md_setpins(_MD *self) {
     if (!self->braked) {
         pin_write(self->pins[self->dir], self->speed);
-        pin_write(self->pins[!self->dir], 1);
+        pin_clear(self->pins[!self->dir]);
     } else {
         pin_write(self->pins[self->dir], self->brakeType);
         pin_write(self->pins[!self->dir], self->brakeType);
@@ -57,10 +57,10 @@ void md_init(_MD *self, _PIN *pin1, _PIN *pin2, uint16_t freq, _OC *oc) {
     self->oc = oc;
 
     if (self != &mdp) {
-        oc_pwm(self->oc, self->pins[0], &timer5, freq, 0);
+        oc_pwm(self->oc, self->pins[self->dir], &timer5, freq, 0);
         OC5CON2 = 0x000F; //synchronize to timer5
         OC7CON2 = 0x000F;
-        pin_set(self->pins[1]);
+        pin_clear(self->pins[!self->dir]);
     }
 }
 
@@ -69,26 +69,35 @@ void md_free(_MD *self) {
 }
 
 void md_brake(_MD *self) {
-    self->braked = 1;
-    if (self == &mdp) {
-        md_brake(&md1);
-        md_brake(&md2);
-        return;
+    if (!self->braked) {
+        self->braked = 1;
+        
+        if (self == &mdp) {
+            md_brake(&md1);
+            md_brake(&md2);
+            return;
+        }
+        oc_free(self->oc);
+        
+        __md_setpins(self);
     }
-    
-    pin_write(self->pins[0], self->brakeType);
-    pin_write(self->pins[1], self->brakeType);
 }
 
 void md_run(_MD *self) {
-    self->braked = 0;
-    if (self == &mdp) {
-        md_run(&md1);
-        md_run(&md2);
-        return;
-    }
+    if (self->braked) {
+        self->braked = 0;
 
-    __md_setpins(self);
+        if (self == &mdp) {
+            md_run(&md1);
+            md_run(&md2);
+            return;
+        }
+        oc_pwm(self->oc, self->pins[self->dir], &timer5, self->freq, 0);
+        OC5CON2 = 0x000F; //synchronize to timer5
+        OC7CON2 = 0x000F;
+
+        __md_setpins(self);
+    }
 }
 
 void md_brakeType(_MD *self, uint8_t type) {
@@ -102,7 +111,7 @@ void md_brakeType(_MD *self, uint8_t type) {
 }
 
 void md_speed(_MD *self, uint16_t speed) {
-    self->speed = ~speed;
+    self->speed = speed;
 
     if (self == &mdp) {
         md_speed(&md1, self->speed);
@@ -125,7 +134,7 @@ void md_direction(_MD *self, uint8_t dir) {
     }
 
     oc_free(self->oc);
-    oc_pwm(self->oc, self->pins[dir], &timer5, self->freq, self->speed);
+    oc_pwm(self->oc, self->pins[dir], &timer5, self->freq, 0);
     OC5CON2 = 0x000F; //synchronize to timer5
     OC7CON2 = 0x000F;
 
