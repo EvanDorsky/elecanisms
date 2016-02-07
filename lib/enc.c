@@ -75,5 +75,7 @@ WORD enc_magnitude(_ENC *self) {
 }
 
 WORD enc_angle(_ENC *self) {
+    // TODO
+    // NEGATE ANGLE
     return __enc_readReg(&enc, (WORD)(REG_ANG_ADDR));
 }
