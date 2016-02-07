@@ -2,13 +2,14 @@ import encodertest
 import time
 from matplotlib import pyplot as plt
 from numpy import *
+import pickle
 
 mask = 0x3FFF
 enc = encodertest.encodertest()
 
 enc.toggle_led3()
 
-samples = 1000
+samples = 2000
 encpos = zeros(samples)
 times = zeros(samples)
 raw = 0
@@ -30,5 +31,21 @@ while(i < samples):
 
         i+=1
 
+encdiff = append(array(0), diff(encpos))
+
+possteps = cumsum(-360*(encdiff>180))
+negsteps = cumsum(360*(encdiff<-180))
+
+encpos += possteps+negsteps
+encvel = divide(diff(encpos), diff(times))
+
+pickle.dump({
+    'position' : encpos,
+    'velocity' : encvel,
+    'time'     : times
+    }, open('spindown.p', 'wb'))
+
 plt.plot(times, encpos)
+plt.hold(True)
+plt.plot(times[0:-1], encvel)
 plt.show()
