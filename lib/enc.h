@@ -30,6 +30,7 @@
 #include "spi.h"
 #include "timer.h"
 #include "common.h"
+#include "ui.h"
 
 void init_enc(void);
 

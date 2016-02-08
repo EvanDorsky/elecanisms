@@ -71,10 +71,15 @@ void VendorRequestsIn(void) {
     }
 }
 
+void VendorRequestsOut(void) {
+
+}
+
 int16_t main(void) {
     init_clock();
     init_ui();
     init_pin();
+    init_timer();
     init_spi();
     init_enc();
 
