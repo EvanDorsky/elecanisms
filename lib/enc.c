@@ -28,7 +28,7 @@
 
 #define REG_MAG_ADDR 0x3FFE
 #define REG_ANG_ADDR 0x3FFF
-#define ENC_MASK     0x3FFF
+#define ENC_MASK     0x1FFF
 
 _ENC enc;
 
@@ -53,9 +53,9 @@ void __enc_wrap_detect(_TIMER *timer) {
     led_toggle(&led1);
 
     WORD raw_angle = enc_raw_angle(&enc);
-    if (enc.last_angle.i - raw_angle.i > 8192) {
+    if (enc.last_angle.i - raw_angle.i > 4096) {
         enc.wrap_count += 1;
-    } else if (enc.last_angle.i - raw_angle.i < -8192) {
+    } else if (enc.last_angle.i - raw_angle.i < -4096) {
         enc.wrap_count -= 1;
     }
 
@@ -99,10 +99,11 @@ WORD enc_magnitude(_ENC *self) {
     return (WORD)(mag.w & ENC_MASK);
 }
 
+// shifts off the LSB
 WORD enc_raw_angle(_ENC *self) {
     WORD ang = __enc_readReg(self, (WORD)REG_ANG_ADDR);
 
-    return (WORD)(ang.w & ENC_MASK);
+    return (WORD)((ang.w>>1) & ENC_MASK);
 }
 
 WORD enc_angle(_ENC *self) {
