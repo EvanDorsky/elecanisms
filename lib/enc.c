@@ -79,8 +79,8 @@ void enc_init(_ENC *self, _SPI *spi, _PIN *MISO, _PIN *MOSI, _PIN *SCK, _PIN *NC
 
     spi_open(self->spi, self->MISO, self->MOSI, self->SCK, 2e6, 1);
 
-    self->last_raw_angle = 0;
-    self->init_raw_angle = enc_raw_angle(self);
+    self->last_angle = 0;
+    self->init_angle = enc_raw_angle(self);
 }
 
 void enc_en_wrap_detect(_ENC *self) {
@@ -104,7 +104,5 @@ WORD enc_raw_angle(_ENC *self) {
 }
 
 WORD enc_angle(_ENC *self) {
-    WORD ang = enc_raw_angle(self);
-
-    return ang;
+    return self->last_angle;
 }

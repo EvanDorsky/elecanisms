@@ -28,6 +28,7 @@ env.Program('encodertest', ['encodertest.c',
                         '../lib/pin.c', 
 						'../lib/enc.c',
                         '../lib/spi.c',
+                        '../lib/timer.c',
                         '../lib/common.c'])
 
 print('Creating builder to load hex file via bootloader...')

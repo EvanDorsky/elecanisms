@@ -28,6 +28,7 @@
 
 #include <stdint.h>
 #include "spi.h"
+#include "timer.h"
 #include "common.h"
 
 void init_enc(void);
@@ -45,7 +46,7 @@ typedef struct {
 
     WORD init_angle;
 
-    WORD last_raw_angle;
+    WORD last_angle;
 } _ENC;
 
 extern _ENC enc;
