@@ -71,11 +71,9 @@ void enc_free(_ENC *self) {
 }
 
 WORD enc_magnitude(_ENC *self) {
-    return __enc_readReg(&enc, (WORD)(REG_MAG_ADDR));
+    return __enc_readReg(self, (WORD)(REG_MAG_ADDR));
 }
 
 WORD enc_angle(_ENC *self) {
-    // TODO
-    // NEGATE ANGLE
-    return __enc_readReg(&enc, (WORD)(REG_ANG_ADDR));
+    return __enc_readReg(self, (WORD)(REG_ANG_ADDR));
 }
