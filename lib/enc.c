@@ -51,13 +51,13 @@ WORD __enc_readReg(_ENC *self, WORD address) {
 
 void __enc_wrap_detect(_TIMER *timer) {
     WORD raw_angle = enc_raw_angle(&enc);
-    if (enc->last_angle.i - raw_angle.i > (int16_t)0x8000) {
-        enc->wrap_count += 1;
-    } else if (enc->last_angle.i - raw_angle.i < -(int16_t)0x8000) {
-        enc->wrap_count -= 1;
+    if (*enc->last_angle.i - raw_angle.i > (int16_t)0x8000) {
+        *enc->wrap_count += 1;
+    } else if (*enc->last_angle.i - raw_angle.i < -(int16_t)0x8000) {
+        *enc->wrap_count -= 1;
     }
 
-    enc->last_angle = raw_angle;
+    *enc->last_angle = raw_angle;
 }
 
 void init_enc(void) {
