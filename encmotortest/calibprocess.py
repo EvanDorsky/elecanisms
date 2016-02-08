@@ -25,11 +25,15 @@ estangles = encpos/(15+1/3)
 
 [m2, b2] = polyfit(angles, estangles, 1)
 
+blue = [0, .51, 1]
+orange = [1, .6, .1]
+green = [.1, .5, .3]
+
 plt.grid(True)
-plt.scatter(angles, encpos)
+plt.scatter(angles, encpos, color=blue)
 plt.hold(True)
-plt.plot(angles, m1*angles+b1)
-plt.title('Calibration Curve 1')
+plt.plot(angles, m1*angles+b1, color=orange)
+plt.title('Encoder Calibration Curve')
 plt.xlabel('Joystick Angle (deg)')
 plt.ylabel('Encoder Angle (deg)')
 plt.ylim([-800, 800])
@@ -37,13 +41,13 @@ plt.legend(['Fit', 'Data'], loc='upper left')
 
 plt.figure()
 plt.grid(True)
-plt.scatter(angles, estangles)
+plt.scatter(angles, estangles, color=blue)
 plt.hold(True)
-plt.plot(angles, m2*angles+b2)
-plt.plot(angles, angles)
-plt.title('Calibration Curve 2')
+plt.plot(angles, m2*angles+b2, color=orange)
+plt.plot(angles, angles, color=green)
+plt.title('Estimated Joystick Reduction Ratio Calibration Curve')
 plt.xlabel('Joystick Angle (deg)')
-plt.ylabel('Corrected Encoder Angle (Based on CAD)')
+plt.ylabel('Joystick Raio-Corrected Encoder Angle (deg)')
 plt.legend(['Fit', 'Unity', 'Data'], loc='upper left')
 
 plt.show()
