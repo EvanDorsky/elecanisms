@@ -9,7 +9,7 @@ enc = encodertest.encodertest()
 
 enc.toggle_led3()
 
-samples = 2000
+samples = 10000
 encpos = zeros(samples)
 times = zeros(samples)
 raw = 0
