@@ -38,14 +38,23 @@ typedef struct {
     _PIN *MOSI;
     _PIN *SCK;
     _PIN *NCS;
+
+    uint8_t wrap_detect;
+    uint8_t wrap_count;
+    _TIMER *timer;
+
+    WORD init_angle;
+
+    WORD last_raw_angle;
 } _ENC;
 
 extern _ENC enc;
 
-void enc_init(_ENC *self, _SPI *spi, _PIN *MISO, _PIN *MOSI, _PIN *SCK, _PIN *NCS);
+void enc_init(_ENC *self, _SPI *spi, _PIN *MISO, _PIN *MOSI, _PIN *SCK, _PIN *NCS, uint8_t wrap_detect, _TIMER *timer);
 void enc_free(_ENC *self);
 
 WORD enc_magnitude(_ENC *self);
+WORD enc_raw_angle(_ENC *self);
 WORD enc_angle(_ENC *self);
 
 #endif
