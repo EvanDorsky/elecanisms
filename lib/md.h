@@ -43,7 +43,7 @@ typedef struct {
     _OC *oc;
 } _MD;
 
-extern _MD md1, md2, mdp;
+extern _MD md1, md2;
 
 void md_init(_MD *self, _PIN *pin1, _PIN *pin2, uint16_t freq, _OC *oc);
 void md_free();
