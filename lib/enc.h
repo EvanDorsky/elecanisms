@@ -42,7 +42,7 @@ typedef struct {
     _PIN *NCS;
 
     uint8_t wrap_detect;
-    uint8_t wrap_count;
+    int16_t wrap_count;
     _TIMER *timer;
 
     WORD init_angle;

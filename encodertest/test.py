@@ -10,6 +10,6 @@ while (True):
 
     mask = 0x3FFF
     angle = int(angleBytes[0])+int(angleBytes[1])*256
-    print "Bin: {0:016b} Hex:{1:04x} Dec:{2:0f}".format(angle, angle, float(angle&mask)/mask*360)
+    print "Bin: {0:016b} Hex:{1:04x} Dec:{2:0f} Angle:{2:0f}".format(angle, angle, float(angle), float(angle&mask)/mask*360)
 
     time.sleep(.02)

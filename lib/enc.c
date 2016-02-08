@@ -53,9 +53,9 @@ void __enc_wrap_detect(_TIMER *timer) {
     led_toggle(&led1);
 
     WORD raw_angle = enc_raw_angle(&enc);
-    if (enc.last_angle.i - raw_angle.i > (int16_t)0x8000) {
+    if (enc.last_angle.i - raw_angle.i > 8192) {
         enc.wrap_count += 1;
-    } else if (enc.last_angle.i - raw_angle.i < -(int16_t)0x8000) {
+    } else if (enc.last_angle.i - raw_angle.i < -8192) {
         enc.wrap_count -= 1;
     }
 
