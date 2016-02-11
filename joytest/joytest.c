@@ -42,7 +42,7 @@ void VendorRequests(void) {
             BD[EP0IN].status = 0xC8;         // send packet as DATA1, set UOWN bit
             break;
         case ENC_READ_REG:
-            result32 = (WORD32)joy_angle(&joy);
+            result32 = (WORD32)joy.angle;
             // result = (WORD)enc.wrap_count;
             BD[EP0IN].address[0] = result32.b[0];
             BD[EP0IN].address[1] = result32.b[1];
@@ -92,8 +92,6 @@ int16_t main(void) {
     init_enc();
     init_md();
     init_joy();
-
-    joy_en_spring(&joy);
 
     InitUSB();
     while (USB_USWSTAT!=CONFIG_STATE) {

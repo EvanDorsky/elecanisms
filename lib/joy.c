@@ -26,34 +26,44 @@
 #include <p24FJ128GB206.h>
 #include "joy.h"
 
-#define JOY_SCALE 13.8096
+// 360/(13.8096*16383)
+#define JOY_SCALE 0.001591
+// 360/(13.8096*16383)
+#define JOY_WRAP_ANG 26.069
+#define JOY_ACONV(word) (float)word.w*JOY_SCALE
 
 _JOY joy;
 
-void __joy_spring(_TIMER *timer) {
-    led_toggle(&led3);
+void __joy_wrap_detect(_JOY *self) {
+    led_toggle(&led1);
 
-    float angle = joy_angle(&joy);
-    md_velocity(&md1, (uint16_t)(abs(angle)*100), abs(angle)/angle < 0);
+    WORD raw_angle = enc_angle(&enc);
+    if (self->last_enc_angle.i - raw_angle.i > 8192) {
+        self->wrap_count += 1;
+    } else if (self->last_enc_angle.i - raw_angle.i < -8192) {
+        self->wrap_count -= 1;
+    }
+
+    self->last_enc_angle = raw_angle;
+    self->angle = JOY_ACONV(raw_angle) + JOY_WRAP_ANG*self->wrap_count - self->zero_angle;
 }
 
+void __joy_loop(_TIMER *timer) {
+    led_toggle(&led3);
+
+    __joy_wrap_detect(&joy);
+}
+
+
 void init_joy(void) {
-    joy_init(&joy, &timer3);
+    joy_init(&joy, &timer4);
 }
 
 void joy_init(_JOY *self, _TIMER *timer) {
-    enc_en_wrap_detect(&enc); 
-
     self->timer = timer;
-    self->zero_angle = (float)enc_angle(&enc).w/13.8;
-}
+    self->zero_angle = JOY_ACONV(enc_angle(&enc));
 
-float joy_angle(_JOY *self) {
-    return (float)enc_angle(&enc).w/13.8 - self->zero_angle;
-}
-
-void joy_en_spring(_JOY *self) {
-    timer_every(self->timer, 5e-2, *__joy_spring);
+    timer_every(self->timer, 4e-3, *__joy_loop);
 }
 
 void joy_free(_JOY *self) {

@@ -37,19 +37,17 @@ void init_joy(void);
 
 typedef struct {
     float zero_angle;
-
+    float angle;
     float w;
 
     _TIMER *timer;
+    WORD last_enc_angle;
+    uint16_t wrap_count;
 } _JOY;
 
 extern _JOY joy;
 
 void joy_init(_JOY *self, _TIMER *timer);
 void joy_free();
-
-float joy_angle(_JOY *self);
-
-void joy_en_spring(_JOY *self);
 
 #endif
