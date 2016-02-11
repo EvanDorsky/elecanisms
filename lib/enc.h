@@ -56,7 +56,6 @@ void enc_init(_ENC *self, _SPI *spi, _PIN *MISO, _PIN *MOSI, _PIN *SCK, _PIN *NC
 void enc_free(_ENC *self);
 
 WORD enc_magnitude(_ENC *self);
-WORD enc_raw_angle(_ENC *self);
 WORD enc_angle(_ENC *self);
 
 #endif

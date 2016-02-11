@@ -49,6 +49,13 @@ WORD __enc_readReg(_ENC *self, WORD address) {
     return result;
 }
 
+// shifts off the LSB
+WORD __enc_raw_angle(_ENC *self) {
+    WORD ang = __enc_readReg(self, (WORD)REG_ANG_ADDR);
+
+    return (WORD)((ang.w>>1) & ENC_MASK);
+}
+
 void __enc_wrap_detect(_TIMER *timer) {
     led_toggle(&led1);
 
@@ -97,13 +104,6 @@ WORD enc_magnitude(_ENC *self) {
     WORD mag = __enc_readReg(self, (WORD)REG_MAG_ADDR);
 
     return (WORD)(mag.w & ENC_MASK);
-}
-
-// shifts off the LSB
-WORD enc_raw_angle(_ENC *self) {
-    WORD ang = __enc_readReg(self, (WORD)REG_ANG_ADDR);
-
-    return (WORD)((ang.w>>1) & ENC_MASK);
 }
 
 WORD enc_angle(_ENC *self) {
