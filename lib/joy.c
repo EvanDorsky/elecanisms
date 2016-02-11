@@ -30,7 +30,7 @@
 #define JOY_SCALE 0.001591
 // 360/(13.8096*16383)
 #define JOY_WRAP_ANG 26.069
-#define JOY_ACONV(word) (float)word.w*JOY_SCALE
+#define JOY_ACONV(word) (float)(word.w)*JOY_SCALE
 
 _JOY joy;
 
@@ -40,8 +40,10 @@ void __joy_wrap_detect(_JOY *self) {
     WORD raw_angle = enc_angle(&enc);
     if (self->last_enc_angle.i - raw_angle.i > 8192) {
         self->wrap_count += 1;
+        led_toggle(&led2);
     } else if (self->last_enc_angle.i - raw_angle.i < -8192) {
         self->wrap_count -= 1;
+        led_toggle(&led2);
     }
 
     self->last_enc_angle = raw_angle;
@@ -49,9 +51,13 @@ void __joy_wrap_detect(_JOY *self) {
 }
 
 void __joy_loop(_TIMER *timer) {
-    led_toggle(&led3);
-
     __joy_wrap_detect(&joy);
+
+    if (joy.angle < 0) {
+        led_on(&led3);
+    } else {
+        led_off(&led3);
+    }
 }
 
 
