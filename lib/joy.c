@@ -34,7 +34,7 @@ void __joy_spring(_TIMER *timer) {
     led_toggle(&led3);
 
     float angle = joy_angle(&joy);
-    md_velocity(&md1, (uint16_t)angle, ((float)0 < angle) - (angle < (float)0) > 0);
+    md_velocity(&md1, (uint16_t)(abs(angle)*100), abs(angle)/angle < 0);
 }
 
 void init_joy(void) {
@@ -53,7 +53,7 @@ float joy_angle(_JOY *self) {
 }
 
 void joy_en_spring(_JOY *self) {
-    timer_every(self->timer, 4e-3, *__joy_spring);
+    timer_every(self->timer, 5e-2, *__joy_spring);
 }
 
 void joy_free(_JOY *self) {

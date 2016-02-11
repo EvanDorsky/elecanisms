@@ -1,5 +1,6 @@
 import encodertest
 import time
+import struct
 
 enc = encodertest.encodertest()
 
@@ -8,8 +9,10 @@ enc.toggle_led3()
 while (True):
     angleBytes = enc.enc_readReg(enc.ENC_ANGLE_AFTER_ZERO_POS_ADDER)
 
-    cycle = 0x1FFF
-    angle = int(angleBytes[0])+int(angleBytes[1])*256
-    print "Bin: {0:016b} Hex:{1:04x} Dec:{2:0f} Angle:{3:0f}".format(angle, angle, float(angle), float(angle)/cycle*360)
+    angleStr = ''.join(map(chr, angleBytes))
+
+    angle, = struct.unpack('f', angleStr)
+    bits, = struct.unpack('I', angleStr)
+    print "Bin: {0:032b} Dec:{1:0f}".format(bits, angle)
 
     time.sleep(.02)
