@@ -107,5 +107,5 @@ WORD enc_raw_angle(_ENC *self) {
 }
 
 WORD enc_angle(_ENC *self) {
-    return self->last_angle;
+    return (WORD)(self->last_angle.w + ENC_MASK*self->wrap_count);
 }
