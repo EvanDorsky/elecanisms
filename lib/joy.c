@@ -30,7 +30,7 @@
 #define JOY_SCALE 0.001591
 // 360/(13.8096*16383)
 #define JOY_WRAP_ANG 26.069
-#define JOY_ACONV(word) (float)(word.w)*JOY_SCALE
+#define JOY_ACONV(word) (float)word.i*JOY_SCALE
 
 _JOY joy;
 

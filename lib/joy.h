@@ -33,6 +33,8 @@
 #include "enc.h"
 #include "ui.h"
 
+#include <float.h>
+
 void init_joy(void);
 
 typedef struct {
@@ -42,7 +44,7 @@ typedef struct {
 
     _TIMER *timer;
     WORD last_enc_angle;
-    uint16_t wrap_count;
+    int8_t wrap_count;
 } _JOY;
 
 extern _JOY joy;
