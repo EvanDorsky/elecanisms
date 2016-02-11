@@ -45,9 +45,6 @@ typedef struct {
     int16_t wrap_count;
     _TIMER *timer;
 
-    WORD init_angle;
-
-    WORD last_angle;
 } _ENC;
 
 extern _ENC enc;
