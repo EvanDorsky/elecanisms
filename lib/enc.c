@@ -46,7 +46,7 @@ WORD __enc_readReg(_ENC *self, WORD address) {
     result.b[1] = spi_transfer(self->spi, 0);
     result.b[0] = spi_transfer(self->spi, 0);
     pin_set(self->NCS);
-    return (WORD)(result & ENC_MASK);
+    return (WORD)(result.w & ENC_MASK);
 }
 
 void init_enc(void) {
