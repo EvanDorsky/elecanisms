@@ -58,6 +58,8 @@ void __joy_loop(_TIMER *timer) {
     } else {
         led_off(&led3);
     }
+
+    md_velocity(&md1, fabsf(joy.angle)*600, fabsf(joy.angle)/joy.angle > 0);
 }
 
 
@@ -67,9 +69,10 @@ void init_joy(void) {
 
 void joy_init(_JOY *self, _TIMER *timer) {
     self->timer = timer;
-    self->zero_angle = JOY_ACONV(enc_angle(&enc));
+    WORD zero_ang = enc_angle(&enc);
+    self->zero_angle = JOY_ACONV(zero_ang);
 
-    timer_every(self->timer, 4e-3, *__joy_loop);
+    timer_every(self->timer, 1e-1, *__joy_loop);
 }
 
 void joy_free(_JOY *self) {
