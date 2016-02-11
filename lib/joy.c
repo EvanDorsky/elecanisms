@@ -47,7 +47,7 @@ void __joy_wrap_detect(_JOY *self) {
     }
 
     self->last_enc_angle = raw_angle;
-    self->angle = JOY_ACONV(raw_angle) + JOY_WRAP_ANG*self->wrap_count;
+    self->angle = JOY_ACONV(raw_angle) - JOY_WRAP_ANG*self->wrap_count;
 }
 
 void __joy_loop(_TIMER *timer) {
@@ -59,7 +59,12 @@ void __joy_loop(_TIMER *timer) {
         led_off(&led3);
     }
 
-    md_velocity(&md1, fabsf(joy.angle)*1000, fabsf(joy.angle)/joy.angle > 0);
+    joy.w = joy.angle + joy.w_1;
+
+    uint16_t mag = fabsf(joy.w) > 0xFFFF ? 0xFFFF : fabsf(joy.w);
+    md_velocity(&md1, mag, fabsf(joy.w)/joy.w);
+
+    joy.w_1 = joy.w;
 }
 
 
