@@ -24,11 +24,11 @@
 ** POSSIBILITY OF SUCH DAMAGE.
 */
 #include <p24FJ128GB206.h>
-#include "common.h"
 #include "enc.h"
 
 #define REG_MAG_ADDR 0x3FFE
 #define REG_ANG_ADDR 0x3FFF
+#define ENC_MASK     0x1FFF
 
 _ENC enc;
 
@@ -49,21 +49,44 @@ WORD __enc_readReg(_ENC *self, WORD address) {
     return result;
 }
 
-void init_enc(void) {
-    enc_init(&enc, &spi1, &D[1], &D[0], &D[2], &D[3]);
+void __enc_wrap_detect(_TIMER *timer) {
+    led_toggle(&led1);
+
+    WORD raw_angle = enc_raw_angle(&enc);
+    if (enc.last_angle.i - raw_angle.i > 4096) {
+        enc.wrap_count += 1;
+    } else if (enc.last_angle.i - raw_angle.i < -4096) {
+        enc.wrap_count -= 1;
+    }
+
+    enc.last_angle = raw_angle;
 }
 
-void enc_init(_ENC *self, _SPI *spi, _PIN *MISO, _PIN *MOSI, _PIN *SCK, _PIN *NCS) {
+void init_enc(void) {
+    enc_init(&enc, &spi1, &D[1], &D[0], &D[2], &D[3], 0, &timer4);
+}
+
+void enc_init(_ENC *self, _SPI *spi, _PIN *MISO, _PIN *MOSI, _PIN *SCK, _PIN *NCS, uint8_t wrap_detect, _TIMER *timer) {
     self->spi = spi;
     self->MISO = MISO;
     self->MOSI = MOSI;
     self->SCK = SCK;
     self->NCS = NCS;
 
+    self->wrap_detect = wrap_detect;
+    self->timer = timer;
+
     pin_digitalOut(self->NCS);
     pin_set(self->NCS);
 
     spi_open(self->spi, self->MISO, self->MOSI, self->SCK, 2e6, 1);
+
+    self->last_angle = (WORD)0;
+    self->init_angle = enc_raw_angle(self);
+}
+
+void enc_en_wrap_detect(_ENC *self) {
+    timer_every(self->timer, 2e-3, *__enc_wrap_detect);
 }
 
 void enc_free(_ENC *self) {
@@ -71,9 +94,18 @@ void enc_free(_ENC *self) {
 }
 
 WORD enc_magnitude(_ENC *self) {
-    return __enc_readReg(self, (WORD)(REG_MAG_ADDR));
+    WORD mag = __enc_readReg(self, (WORD)REG_MAG_ADDR);
+
+    return (WORD)(mag.w & ENC_MASK);
+}
+
+// shifts off the LSB
+WORD enc_raw_angle(_ENC *self) {
+    WORD ang = __enc_readReg(self, (WORD)REG_ANG_ADDR);
+
+    return (WORD)((ang.w>>1) & ENC_MASK);
 }
 
 WORD enc_angle(_ENC *self) {
-    return __enc_readReg(self, (WORD)(REG_ANG_ADDR));
+    return (WORD)(self->last_angle.w + ENC_MASK*self->wrap_count);
 }

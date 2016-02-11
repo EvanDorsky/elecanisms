@@ -8,8 +8,8 @@ enc.toggle_led3()
 while (True):
     angleBytes = enc.enc_readReg(enc.ENC_ANGLE_AFTER_ZERO_POS_ADDER)
 
-    mask = 0x3FFF
+    cycle = 0x1FFF
     angle = int(angleBytes[0])+int(angleBytes[1])*256
-    print "Bin: {0:016b} Hex:{1:04x} Dec:{2:0f}".format(angle, angle, float(angle&mask)/mask*360)
+    print "Bin: {0:016b} Hex:{1:04x} Dec:{2:0f} Angle:{3:0f}".format(angle, angle, float(angle), float(angle)/cycle*360)
 
     time.sleep(.02)
