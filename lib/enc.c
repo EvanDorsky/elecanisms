@@ -26,9 +26,9 @@
 #include <p24FJ128GB206.h>
 #include "enc.h"
 
-#define REG_MAG_ADDR 0x3FFE
-#define REG_ANG_ADDR 0x3FFF
-#define ENC_MASK     0x1FFF
+#define ENC_REG_MAG_ADDR 0x3FFE
+#define ENC_REG_ANG_ADDR 0x3FFF
+#define ENC_MASK     0x3FFF
 
 _ENC enc;
 
@@ -46,20 +46,7 @@ WORD __enc_readReg(_ENC *self, WORD address) {
     result.b[1] = spi_transfer(self->spi, 0);
     result.b[0] = spi_transfer(self->spi, 0);
     pin_set(self->NCS);
-    return result;
-}
-
-void __enc_wrap_detect(_TIMER *timer) {
-    led_toggle(&led1);
-
-    WORD raw_angle = enc_raw_angle(&enc);
-    if (enc.last_angle.i - raw_angle.i > 4096) {
-        enc.wrap_count += 1;
-    } else if (enc.last_angle.i - raw_angle.i < -4096) {
-        enc.wrap_count -= 1;
-    }
-
-    enc.last_angle = raw_angle;
+    return (WORD)(result & ENC_MASK);
 }
 
 void init_enc(void) {
@@ -80,13 +67,6 @@ void enc_init(_ENC *self, _SPI *spi, _PIN *MISO, _PIN *MOSI, _PIN *SCK, _PIN *NC
     pin_set(self->NCS);
 
     spi_open(self->spi, self->MISO, self->MOSI, self->SCK, 2e6, 1);
-
-    self->last_angle = (WORD)0;
-    self->init_angle = enc_raw_angle(self);
-}
-
-void enc_en_wrap_detect(_ENC *self) {
-    timer_every(self->timer, 2e-3, *__enc_wrap_detect);
 }
 
 void enc_free(_ENC *self) {
@@ -94,18 +74,9 @@ void enc_free(_ENC *self) {
 }
 
 WORD enc_magnitude(_ENC *self) {
-    WORD mag = __enc_readReg(self, (WORD)REG_MAG_ADDR);
-
-    return (WORD)(mag.w & ENC_MASK);
-}
-
-// shifts off the LSB
-WORD enc_raw_angle(_ENC *self) {
-    WORD ang = __enc_readReg(self, (WORD)REG_ANG_ADDR);
-
-    return (WORD)((ang.w>>1) & ENC_MASK);
+    return __enc_readReg(self, (WORD)ENC_REG_MAG_ADDR);
 }
 
 WORD enc_angle(_ENC *self) {
-    return (WORD)(self->last_angle.w + ENC_MASK*self->wrap_count);
+    return __enc_readReg(self, (WORD)ENC_REG_ANG_ADDR);
 }
