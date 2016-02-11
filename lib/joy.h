@@ -31,19 +31,25 @@
 #include "timer.h"
 #include "md.h"
 #include "enc.h"
+#include "ui.h"
 
 void init_joy(void);
 
 typedef struct {
-    _MD *md;
-    _ENC *enc;
+    float zero_angle;
 
-    WORD zero_angle;
+    float w;
+
+    _TIMER *timer;
 } _JOY;
 
 extern _JOY joy;
 
-void joy_init(_JOY *self, );
+void joy_init(_JOY *self, _TIMER *timer);
 void joy_free();
+
+float joy_angle(_JOY *self);
+
+void joy_en_spring(_JOY *self);
 
 #endif

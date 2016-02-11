@@ -26,16 +26,36 @@
 #include <p24FJ128GB206.h>
 #include "joy.h"
 
+#define JOY_SCALE 13.8096
+
 _JOY joy;
 
-void init_md(void) {
-    joy_init(&joy, &D[7], &D[8], 2e2, &oc7);
+void __joy_spring(_TIMER *timer) {
+    led_toggle(&led3);
+
+    float angle = joy_angle(&joy);
+    md_velocity(&md1, (uint16_t)angle, ((float)0 < angle) - (angle < (float)0) > 0);
 }
 
-void joy_init(_MD *self, _PIN *pin1, _PIN *pin2, uint16_t freq, _OC *oc) {
-    
+void init_joy(void) {
+    joy_init(&joy, &timer3);
 }
 
-void joy_free(_MD *self) {
+void joy_init(_JOY *self, _TIMER *timer) {
+    enc_en_wrap_detect(&enc); 
+
+    self->timer = timer;
+    self->zero_angle = (float)enc_angle(&enc).w/13.8;
+}
+
+float joy_angle(_JOY *self) {
+    return (float)enc_angle(&enc).w/13.8 - self->zero_angle;
+}
+
+void joy_en_spring(_JOY *self) {
+    timer_every(self->timer, 4e-3, *__joy_spring);
+}
+
+void joy_free(_JOY *self) {
     
 }
