@@ -38,11 +38,11 @@
 void init_joy(void);
 
 typedef struct {
-    float zero_angle;
     float angle;
     float w;
 
     _TIMER *timer;
+    WORD zero_angle;
     WORD last_enc_angle;
     int8_t wrap_count;
 } _JOY;

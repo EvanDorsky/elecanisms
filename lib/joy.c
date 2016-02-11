@@ -28,7 +28,7 @@
 
 // 360/(13.8096*16383)
 #define JOY_SCALE 0.001591
-// 360/(13.8096*16383)
+// 360/13.8096
 #define JOY_WRAP_ANG 26.069
 #define JOY_ACONV(word) (float)word.i*JOY_SCALE
 
@@ -37,7 +37,7 @@ _JOY joy;
 void __joy_wrap_detect(_JOY *self) {
     led_toggle(&led1);
 
-    WORD raw_angle = enc_angle(&enc);
+    WORD raw_angle = (WORD)(enc_angle(&enc).i - self->zero_angle.i);
     if (self->last_enc_angle.i - raw_angle.i > 8192) {
         self->wrap_count += 1;
         led_toggle(&led2);
@@ -47,7 +47,7 @@ void __joy_wrap_detect(_JOY *self) {
     }
 
     self->last_enc_angle = raw_angle;
-    self->angle = JOY_ACONV(raw_angle) + JOY_WRAP_ANG*self->wrap_count - self->zero_angle;
+    self->angle = JOY_ACONV(raw_angle) + JOY_WRAP_ANG*self->wrap_count;
 }
 
 void __joy_loop(_TIMER *timer) {
@@ -59,7 +59,7 @@ void __joy_loop(_TIMER *timer) {
         led_off(&led3);
     }
 
-    md_velocity(&md1, fabsf(joy.angle)*600, fabsf(joy.angle)/joy.angle > 0);
+    md_velocity(&md1, fabsf(joy.angle)*1000, fabsf(joy.angle)/joy.angle > 0);
 }
 
 
@@ -69,10 +69,9 @@ void init_joy(void) {
 
 void joy_init(_JOY *self, _TIMER *timer) {
     self->timer = timer;
-    WORD zero_ang = enc_angle(&enc);
-    self->zero_angle = JOY_ACONV(zero_ang);
+    self->zero_angle = enc_angle(&enc);
 
-    timer_every(self->timer, 1e-1, *__joy_loop);
+    timer_every(self->timer, 4e-3, *__joy_loop);
 }
 
 void joy_free(_JOY *self) {
