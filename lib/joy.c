@@ -26,6 +26,8 @@
 #include <p24FJ128GB206.h>
 #include "joy.h"
 
+#define JOY_MAX_SPEED 0xFFFF
+#define JOY_MIN_SPEED 0x2000
 // 360/(13.8096*16383)
 #define JOY_SCALE 0.001591
 // 360/13.8096
@@ -61,8 +63,8 @@ void __joy_loop(_TIMER *timer) {
 
     joy.w = joy.angle + joy.w_1;
 
-    uint16_t mag = fabsf(joy.w) > 0xFFFF ? 0xFFFF : fabsf(joy.w);
-    md_velocity(&md1, mag, fabsf(joy.w)/joy.w);
+    uint16_t speed = min(max(fabsf(joy.w), JOY_MIN_SPEED), JOY_MAX_SPEED);
+    md_velocity(&md1, speed, fabsf(joy.w)/joy.w);
 
     joy.w_1 = joy.w;
 }
@@ -75,6 +77,9 @@ void init_joy(void) {
 void joy_init(_JOY *self, _TIMER *timer) {
     self->timer = timer;
     self->zero_angle = enc_angle(&enc);
+    self->w = 0;
+    self->w_1 = 0;
+    self->w_2 = 0;
 
     timer_every(self->timer, 4e-3, *__joy_loop);
 }
