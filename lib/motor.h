@@ -30,6 +30,7 @@
 #include "timer.h"
 #include "enc.h"
 #include "md.h"
+#include "common.h"
 
 void init_motor(void);
 
@@ -37,8 +38,16 @@ typedef struct {
     _ENC *enc;
     _MD *md;
 
+    WORD last_enc_pos;
+    int8_t wrap_count;
+
     float pos;
+    float pos_1;
     float vel;
+    float vel_1;
+
+    float vel_set;
+    float vel_err;
 } _MOTOR;
 
 extern _MOTOR motor1, motor2;
