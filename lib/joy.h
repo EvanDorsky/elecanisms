@@ -23,60 +23,35 @@
 ** ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 ** POSSIBILITY OF SUCH DAMAGE.
 */
-#include <p24FJ128GB206.h>
+#ifndef _JOY_H_
+#define _JOY_H_
+
+#include <stdint.h>
+#include "common.h"
+#include "timer.h"
+#include "md.h"
 #include "enc.h"
+#include "ui.h"
 
-#define ENC_REG_MAG_ADDR 0x3FFE
-#define ENC_REG_ANG_ADDR 0x3FFF
-#define ENC_MASK     0x3FFF
+#include <float.h>
 
-_ENC enc;
+void init_joy(void);
 
-WORD __enc_readReg(_ENC *self, WORD address) {
-    WORD cmd, result;
-    cmd.w = 0x4000|address.w; //set 2nd MSB to 1 for a read
-    cmd.w |= parity(cmd.w)<<15; //calculate even parity
+typedef struct {
+    float angle;
+    float w_2;
+    float w_1;
+    float w;
 
-    pin_clear(self->NCS);
-    spi_transfer(self->spi, cmd.b[1]);
-    spi_transfer(self->spi, cmd.b[0]);
-    pin_set(self->NCS);
+    _TIMER *timer;
+    WORD zero_angle;
+    WORD last_enc_angle;
+    int8_t wrap_count;
+} _JOY;
 
-    pin_clear(self->NCS);
-    result.b[1] = spi_transfer(self->spi, 0);
-    result.b[0] = spi_transfer(self->spi, 0);
-    pin_set(self->NCS);
-    return (WORD)(result.w & ENC_MASK);
-}
+extern _JOY joy;
 
-void init_enc(void) {
-    enc_init(&enc, &spi1, &D[1], &D[0], &D[2], &D[3], 0, &timer4);
-}
+void joy_init(_JOY *self, _TIMER *timer);
+void joy_free();
 
-void enc_init(_ENC *self, _SPI *spi, _PIN *MISO, _PIN *MOSI, _PIN *SCK, _PIN *NCS, uint8_t wrap_detect, _TIMER *timer) {
-    self->spi = spi;
-    self->MISO = MISO;
-    self->MOSI = MOSI;
-    self->SCK = SCK;
-    self->NCS = NCS;
-
-    self->wrap_detect = wrap_detect;
-    self->timer = timer;
-
-    pin_digitalOut(self->NCS);
-    pin_set(self->NCS);
-
-    spi_open(self->spi, self->MISO, self->MOSI, self->SCK, 2e6, 1);
-}
-
-void enc_free(_ENC *self) {
-
-}
-
-WORD enc_magnitude(_ENC *self) {
-    return __enc_readReg(self, (WORD)ENC_REG_MAG_ADDR);
-}
-
-WORD enc_angle(_ENC *self) {
-    return __enc_readReg(self, (WORD)ENC_REG_ANG_ADDR);
-}
+#endif

@@ -24,59 +24,66 @@
 ** POSSIBILITY OF SUCH DAMAGE.
 */
 #include <p24FJ128GB206.h>
-#include "enc.h"
+#include "joy.h"
 
-#define ENC_REG_MAG_ADDR 0x3FFE
-#define ENC_REG_ANG_ADDR 0x3FFF
-#define ENC_MASK     0x3FFF
+#define JOY_MAX_SPEED 0xFFFF
+#define JOY_MIN_SPEED 0x2000
+// 360/(13.8096*16383)
+#define JOY_SCALE 0.001591
+// 360/13.8096
+#define JOY_WRAP_ANG 26.069
+#define JOY_ACONV(word) (float)word.i*JOY_SCALE
 
-_ENC enc;
+_JOY joy;
 
-WORD __enc_readReg(_ENC *self, WORD address) {
-    WORD cmd, result;
-    cmd.w = 0x4000|address.w; //set 2nd MSB to 1 for a read
-    cmd.w |= parity(cmd.w)<<15; //calculate even parity
+void __joy_wrap_detect(_JOY *self) {
+    led_toggle(&led1);
 
-    pin_clear(self->NCS);
-    spi_transfer(self->spi, cmd.b[1]);
-    spi_transfer(self->spi, cmd.b[0]);
-    pin_set(self->NCS);
+    WORD raw_angle = (WORD)(enc_angle(&enc).i - self->zero_angle.i);
+    if (self->last_enc_angle.i - raw_angle.i > 8192) {
+        self->wrap_count += 1;
+        led_toggle(&led2);
+    } else if (self->last_enc_angle.i - raw_angle.i < -8192) {
+        self->wrap_count -= 1;
+        led_toggle(&led2);
+    }
 
-    pin_clear(self->NCS);
-    result.b[1] = spi_transfer(self->spi, 0);
-    result.b[0] = spi_transfer(self->spi, 0);
-    pin_set(self->NCS);
-    return (WORD)(result.w & ENC_MASK);
+    self->last_enc_angle = raw_angle;
+    self->angle = JOY_ACONV(raw_angle) - JOY_WRAP_ANG*self->wrap_count;
 }
 
-void init_enc(void) {
-    enc_init(&enc, &spi1, &D[1], &D[0], &D[2], &D[3], 0, &timer4);
+void __joy_loop(_TIMER *timer) {
+    __joy_wrap_detect(&joy);
+
+    if (joy.angle < 0) {
+        led_on(&led3);
+    } else {
+        led_off(&led3);
+    }
+
+    joy.w = joy.angle + joy.w_1;
+
+    uint16_t speed = min(max(fabsf(joy.w), JOY_MIN_SPEED), JOY_MAX_SPEED);
+    md_velocity(&md1, speed, fabsf(joy.w)/joy.w);
+
+    joy.w_1 = joy.w;
 }
 
-void enc_init(_ENC *self, _SPI *spi, _PIN *MISO, _PIN *MOSI, _PIN *SCK, _PIN *NCS, uint8_t wrap_detect, _TIMER *timer) {
-    self->spi = spi;
-    self->MISO = MISO;
-    self->MOSI = MOSI;
-    self->SCK = SCK;
-    self->NCS = NCS;
 
-    self->wrap_detect = wrap_detect;
+void init_joy(void) {
+    joy_init(&joy, &timer4);
+}
+
+void joy_init(_JOY *self, _TIMER *timer) {
     self->timer = timer;
+    self->zero_angle = enc_angle(&enc);
+    self->w = 0;
+    self->w_1 = 0;
+    self->w_2 = 0;
 
-    pin_digitalOut(self->NCS);
-    pin_set(self->NCS);
-
-    spi_open(self->spi, self->MISO, self->MOSI, self->SCK, 2e6, 1);
+    timer_every(self->timer, 4e-3, *__joy_loop);
 }
 
-void enc_free(_ENC *self) {
-
-}
-
-WORD enc_magnitude(_ENC *self) {
-    return __enc_readReg(self, (WORD)ENC_REG_MAG_ADDR);
-}
-
-WORD enc_angle(_ENC *self) {
-    return __enc_readReg(self, (WORD)ENC_REG_ANG_ADDR);
+void joy_free(_JOY *self) {
+    
 }
