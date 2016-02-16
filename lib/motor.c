@@ -26,8 +26,8 @@
 #include <p24FJ128GB206.h>
 #include "motor.h"
 
-#define MOTOR_MIN_SPEED 0
-#define MOTOR_MAX_SPEED 255
+#define MOTOR_MIN_SPEED 0x0000
+#define MOTOR_MAX_SPEED 0xF000
 #define MOTOR_T         1e-2
 #define MOTOR_SCALE 0.02197399744 // 360/16383
 #define MOTOR_WRAP_ANG 360
@@ -36,9 +36,7 @@
 _MOTOR motor1, motor2;
 
 void __motor_get_state(_MOTOR *self) {
-    led_toggle(&led1);
-
-    WORD raw_angle = (WORD)(enc_angle(&enc).i - self->zero_angle.i);
+    WORD raw_angle = (WORD)-(enc_angle(&enc).i - self->zero_angle.i);
     if (self->last_enc_pos.i - raw_angle.i > 8192) {
         self->wrap_count += 1;
         led_toggle(&led2);
@@ -65,11 +63,12 @@ void __motor_get_state(_MOTOR *self) {
 volatile _MOTOR *__ml_motor = NULL;
 void __motor_loop(_TIMER *timer) {
     __motor_get_state(__ml_motor);
+    led_toggle(&led1);
 
     __ml_motor->vel_err = __ml_motor->vel_set - __ml_motor->vel;
 
-    uint16_t speed = min(max(fabsf(__ml_motor->vel_err), MOTOR_MIN_SPEED), MOTOR_MAX_SPEED);
-    md_velocity(&md1, speed, fabsf(__ml_motor->vel_err)/__ml_motor->vel_err);
+    uint16_t speed = min(max(fabsf(__ml_motor->vel_err)*10, MOTOR_MIN_SPEED), MOTOR_MAX_SPEED);
+    md_velocity(__ml_motor->md, speed, fabsf(__ml_motor->vel_err)/__ml_motor->vel_err < 0);
 }
 
 void init_motor(void) {

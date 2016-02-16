@@ -42,7 +42,7 @@ void VendorRequests(void) {
             BD[EP0IN].status = 0xC8;         // send packet as DATA1, set UOWN bit
             break;
         case ENC_READ_REG:
-            result32 = (WORD32)motor1.pos;
+            result32 = (WORD32)motor1.vel_err;
             // result = (WORD)enc.wrap_count;
             BD[EP0IN].address[0] = result32.b[0];
             BD[EP0IN].address[1] = result32.b[1];
