@@ -29,10 +29,8 @@
 #define MOTOR_MIN_SPEED 0
 #define MOTOR_MAX_SPEED 255
 #define MOTOR_T         1e-2
-// 360/(13.8096*16383)
-#define MOTOR_SCALE 0.001591
-// 360/13.8096
-#define MOTOR_WRAP_ANG 26.069
+#define MOTOR_SCALE 0.02197399744 // 360/16383
+#define MOTOR_WRAP_ANG 360
 #define MOTOR_ACONV(word) (float)word.i*MOTOR_SCALE
 
 _MOTOR motor1, motor2;
@@ -66,7 +64,7 @@ void __motor_loop(_TIMER *timer) {
     __ml_motor->vel_err = __ml_motor->vel_set - __ml_motor->vel;
 
     uint16_t speed = min(max(fabsf(__ml_motor->vel_err), MOTOR_MIN_SPEED), MOTOR_MAX_SPEED);
-    md_velocity(&md1, speed, fabsf(__ml_motor->vel)/__ml_motor->vel);
+    md_velocity(&md1, speed, fabsf(__ml_motor->vel_err)/__ml_motor->vel_err);
 }
 
 void init_motor(void) {
