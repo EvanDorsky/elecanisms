@@ -39,6 +39,7 @@ typedef struct {
     _MD *md;
 
     WORD last_enc_pos;
+    WORD zero_angle;
     int8_t wrap_count;
 
     float pos;
@@ -48,6 +49,8 @@ typedef struct {
 
     float vel_set;
     float vel_err;
+
+    _TIMER *timer;
 } _MOTOR;
 
 extern _MOTOR motor1, motor2;

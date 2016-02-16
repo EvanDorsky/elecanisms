@@ -50,7 +50,12 @@ void __motor_get_state(_MOTOR *self) {
     self->last_enc_pos = raw_angle;
 
     self->pos_1 = self->pos;
-    self->pos = MOTOR_ACONV(raw_angle) - MOTOR_WRAP_ANG*self->wrap_count;
+    self->pos = MOTOR_ACONV(raw_angle) + MOTOR_WRAP_ANG*self->wrap_count;
+
+    if (self->pos > 0)
+        led_off(&led3);
+    else
+        led_on(&led3);
 
     self->vel_1 = self->vel;
     self->vel = (self->pos - self->pos_1)/MOTOR_T;
@@ -59,7 +64,7 @@ void __motor_get_state(_MOTOR *self) {
 // VERY VERY BAD
 volatile _MOTOR *__ml_motor = NULL;
 void __motor_loop(_TIMER *timer) {
-    __motor_get_state(motor_loop_motor);
+    __motor_get_state(__ml_motor);
 
     __ml_motor->vel_err = __ml_motor->vel_set - __ml_motor->vel;
 
@@ -68,7 +73,7 @@ void __motor_loop(_TIMER *timer) {
 }
 
 void init_motor(void) {
-    __ml_motor = motor1;
+    __ml_motor = &motor1;
     motor_init(&motor1, &enc, &md1, &timer3);
 }
 
@@ -81,7 +86,10 @@ void motor_init(_MOTOR *self, _ENC *enc, _MD *md, _TIMER *timer) {
     self->vel_1 = 0;
 
     self->vel_err = 0;
+    self->vel_set = 360;
+    self->zero_angle = enc_angle(self->enc);
 
+    self->timer = timer;
     timer_every(self->timer, MOTOR_T, *__motor_loop); 
 }
 
