@@ -23,36 +23,39 @@
 ** ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 ** POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef _ENC_H_
-#define _ENC_H_
+#ifndef _MOTOR_H_
+#define _MOTOR_H_
 
 #include <stdint.h>
-#include "spi.h"
 #include "timer.h"
+#include "enc.h"
+#include "md.h"
 #include "common.h"
-#include "ui.h"
 
-void init_enc(void);
+void init_motor(void);
 
 typedef struct {
-    _SPI *spi;
-    _PIN *MISO;
-    _PIN *MOSI;
-    _PIN *SCK;
-    _PIN *NCS;
+    _ENC *enc;
+    _MD *md;
 
-    uint8_t wrap_detect;
-    int16_t wrap_count;
+    WORD last_enc_pos;
+    WORD zero_angle;
+    int8_t wrap_count;
+
+    float pos;
+    float pos_1;
+    float vel;
+    float vel_1;
+
+    float vel_set;
+    float vel_err;
+
     _TIMER *timer;
+} _MOTOR;
 
-} _ENC;
+extern _MOTOR motor1, motor2;
 
-extern _ENC enc;
-
-void enc_init(_ENC *self, _SPI *spi, _PIN *MISO, _PIN *MOSI, _PIN *SCK, _PIN *NCS, uint8_t wrap_detect, _TIMER *timer);
-void enc_free(_ENC *self);
-
-WORD enc_magnitude(_ENC *self);
-WORD enc_angle(_ENC *self);
+void motor_init(_MOTOR *self, _ENC *enc, _MD *md, _TIMER *timer);
+void motor_free();
 
 #endif

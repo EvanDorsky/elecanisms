@@ -45,6 +45,16 @@
 #define bitclear(addr, bit)     *(addr) &= ~(1<<bit)
 #define bitflip(addr, bit)      *(addr) ^= 1<<bit
 
+#define max(a,b) \
+   ({ __typeof__ (a) _a = (a); \
+       __typeof__ (b) _b = (b); \
+     _a > _b ? _a : _b; })
+
+#define min(a,b) \
+   ({ __typeof__ (a) _a = (a); \
+       __typeof__ (b) _b = (b); \
+     _a < _b ? _a : _b; })
+
 typedef union {
     int16_t i;
     uint16_t w;
@@ -52,6 +62,7 @@ typedef union {
 } WORD;
 
 typedef union {
+    float f;
     int32_t l;
     uint32_t ul;
     uint16_t w[2];

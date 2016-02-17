@@ -23,36 +23,67 @@
 ** ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 ** POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef _ENC_H_
-#define _ENC_H_
+#include <p24FJ128GB206.h>
+#include "joy.h"
 
-#include <stdint.h>
-#include "spi.h"
-#include "timer.h"
-#include "common.h"
-#include "ui.h"
+#define JOY_MAX_SPEED 0xFFFF
+#define JOY_MIN_SPEED 0x2000
+// 360/(13.8096*16383)
+#define JOY_SCALE 0.001591
+// 360/13.8096
+#define JOY_WRAP_ANG 26.069
+#define JOY_ACONV(word) (float)word.i*JOY_SCALE
 
-void init_enc(void);
+_JOY joy;
 
-typedef struct {
-    _SPI *spi;
-    _PIN *MISO;
-    _PIN *MOSI;
-    _PIN *SCK;
-    _PIN *NCS;
+void __joy_wrap_detect(_JOY *self) {
+    led_toggle(&led1);
 
-    uint8_t wrap_detect;
-    int16_t wrap_count;
-    _TIMER *timer;
+    WORD raw_angle = (WORD)(enc_angle(&enc).i - self->zero_angle.i);
+    if (self->last_enc_angle.i - raw_angle.i > 8192) {
+        self->wrap_count += 1;
+        led_toggle(&led2);
+    } else if (self->last_enc_angle.i - raw_angle.i < -8192) {
+        self->wrap_count -= 1;
+        led_toggle(&led2);
+    }
 
-} _ENC;
+    self->last_enc_angle = raw_angle;
+    self->angle = JOY_ACONV(raw_angle) - JOY_WRAP_ANG*self->wrap_count;
+}
 
-extern _ENC enc;
+void __joy_loop(_TIMER *timer) {
+    __joy_wrap_detect(&joy);
 
-void enc_init(_ENC *self, _SPI *spi, _PIN *MISO, _PIN *MOSI, _PIN *SCK, _PIN *NCS, uint8_t wrap_detect, _TIMER *timer);
-void enc_free(_ENC *self);
+    if (joy.angle < 0) {
+        led_on(&led3);
+    } else {
+        led_off(&led3);
+    }
 
-WORD enc_magnitude(_ENC *self);
-WORD enc_angle(_ENC *self);
+    joy.w = joy.angle + joy.w_1;
 
-#endif
+    uint16_t speed = min(max(fabsf(joy.w), JOY_MIN_SPEED), JOY_MAX_SPEED);
+    md_velocity(&md1, speed, fabsf(joy.w)/joy.w);
+
+    joy.w_1 = joy.w;
+}
+
+
+void init_joy(void) {
+    joy_init(&joy, &timer4);
+}
+
+void joy_init(_JOY *self, _TIMER *timer) {
+    self->timer = timer;
+    self->zero_angle = enc_angle(&enc);
+    self->w = 0;
+    self->w_1 = 0;
+    self->w_2 = 0;
+
+    timer_every(self->timer, 4e-3, *__joy_loop);
+}
+
+void joy_free(_JOY *self) {
+    
+}

@@ -24,11 +24,11 @@
 ** POSSIBILITY OF SUCH DAMAGE.
 */
 #include <p24FJ128GB206.h>
-#include "common.h"
 #include "enc.h"
 
-#define REG_MAG_ADDR 0x3FFE
-#define REG_ANG_ADDR 0x3FFF
+#define ENC_REG_MAG_ADDR 0x3FFE
+#define ENC_REG_ANG_ADDR 0x3FFF
+#define ENC_MASK     0x3FFF
 
 _ENC enc;
 
@@ -46,19 +46,22 @@ WORD __enc_readReg(_ENC *self, WORD address) {
     result.b[1] = spi_transfer(self->spi, 0);
     result.b[0] = spi_transfer(self->spi, 0);
     pin_set(self->NCS);
-    return result;
+    return (WORD)(result.w & ENC_MASK);
 }
 
 void init_enc(void) {
-    enc_init(&enc, &spi1, &D[1], &D[0], &D[2], &D[3]);
+    enc_init(&enc, &spi1, &D[1], &D[0], &D[2], &D[3], 0, &timer4);
 }
 
-void enc_init(_ENC *self, _SPI *spi, _PIN *MISO, _PIN *MOSI, _PIN *SCK, _PIN *NCS) {
+void enc_init(_ENC *self, _SPI *spi, _PIN *MISO, _PIN *MOSI, _PIN *SCK, _PIN *NCS, uint8_t wrap_detect, _TIMER *timer) {
     self->spi = spi;
     self->MISO = MISO;
     self->MOSI = MOSI;
     self->SCK = SCK;
     self->NCS = NCS;
+
+    self->wrap_detect = wrap_detect;
+    self->timer = timer;
 
     pin_digitalOut(self->NCS);
     pin_set(self->NCS);
@@ -71,9 +74,9 @@ void enc_free(_ENC *self) {
 }
 
 WORD enc_magnitude(_ENC *self) {
-    return __enc_readReg(&enc, (WORD)(REG_MAG_ADDR));
+    return __enc_readReg(self, (WORD)ENC_REG_MAG_ADDR);
 }
 
 WORD enc_angle(_ENC *self) {
-    return __enc_readReg(&enc, (WORD)(REG_ANG_ADDR));
+    return __enc_readReg(self, (WORD)ENC_REG_ANG_ADDR);
 }

@@ -23,36 +23,35 @@
 ** ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 ** POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef _ENC_H_
-#define _ENC_H_
+#ifndef _JOY_H_
+#define _JOY_H_
 
 #include <stdint.h>
-#include "spi.h"
-#include "timer.h"
 #include "common.h"
+#include "timer.h"
+#include "md.h"
+#include "enc.h"
 #include "ui.h"
 
-void init_enc(void);
+#include <float.h>
+
+void init_joy(void);
 
 typedef struct {
-    _SPI *spi;
-    _PIN *MISO;
-    _PIN *MOSI;
-    _PIN *SCK;
-    _PIN *NCS;
+    float angle;
+    float w_2;
+    float w_1;
+    float w;
 
-    uint8_t wrap_detect;
-    int16_t wrap_count;
     _TIMER *timer;
+    WORD zero_angle;
+    WORD last_enc_angle;
+    int8_t wrap_count;
+} _JOY;
 
-} _ENC;
+extern _JOY joy;
 
-extern _ENC enc;
-
-void enc_init(_ENC *self, _SPI *spi, _PIN *MISO, _PIN *MOSI, _PIN *SCK, _PIN *NCS, uint8_t wrap_detect, _TIMER *timer);
-void enc_free(_ENC *self);
-
-WORD enc_magnitude(_ENC *self);
-WORD enc_angle(_ENC *self);
+void joy_init(_JOY *self, _TIMER *timer);
+void joy_free();
 
 #endif

@@ -21,16 +21,17 @@ list = Builder(action = 'xc16-objdump -S -D $SOURCE > $TARGET',
                src_suffix = 'elf')
 env.Append(BUILDERS = {'List' : list})
 
-env.Program('encodertest', ['encmotortest.c',
+env.Program('joytest', ['joytest.c',
                         'descriptors.c', 
                         'usb.c', 
                         '../lib/ui.c', 
                         '../lib/pin.c', 
-                        '../lib/timer.c', 
 						'../lib/enc.c',
                         '../lib/spi.c',
-                        '../lib/oc.c',
+                        '../lib/timer.c',
                         '../lib/md.c',
+                        '../lib/oc.c',
+                        '../lib/joy.c',
                         '../lib/common.c'])
 
 print('Creating builder to load hex file via bootloader...')
@@ -48,8 +49,8 @@ load = Builder(action=load_function,
 
 env.Append(BUILDERS = {'Load' : load})
 
-env.Hex('encodertest')
-env.List('encodertest')
+env.Hex('joytest')
+env.List('joytest')
 # To automatically load the hex file, you need to run scons like this:
 # >scons --site-dir ../site_scons
-env.Load('encodertest') # Uncomment this line to automatically load the hex file
+env.Load('joytest') # Uncomment this line to automatically load the hex file

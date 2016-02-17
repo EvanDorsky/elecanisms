@@ -2,11 +2,13 @@
 #include <stdint.h>
 #include "config.h"
 #include "common.h"
+#include "timer.h"
 #include "ui.h"
 #include "usb.h"
 #include "pin.h"
 #include "spi.h"
 #include "enc.h"
+#include "md.h"
 
 #define TOGGLE_LED1         1
 #define TOGGLE_LED2         2
@@ -87,18 +89,33 @@ void VendorRequestsOut(void) {
 //    }
 }
 
+uint8_t brakeType = 0;
 int16_t main(void) {
     init_clock();
+    init_timer();
     init_ui();
     init_pin();
     init_spi();
     init_enc();
+    init_oc();
+    init_md();
 
     InitUSB();
     while (USB_USWSTAT!=CONFIG_STATE) {
         ServiceUSB();
     }
+
+    led_on(&led3);
+
+    md_speed(&mdp, 0xffff);
+
     while (1) {
+        if (!sw_read(&sw1)) {
+            md_brake(&mdp);
+        } else {
+            md_run(&mdp);
+        }
+
         ServiceUSB();
     }
 }
