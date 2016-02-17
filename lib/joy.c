@@ -61,7 +61,7 @@ void __joy_loop(_TIMER *timer) {
         led_off(&led3);
     }
 
-    joy.w = joy.angle + joy.w_1;
+    joy.w = joy.angle;
 
     uint16_t speed = min(max(fabsf(joy.w), JOY_MIN_SPEED), JOY_MAX_SPEED);
     md_velocity(&md1, speed, fabsf(joy.w)/joy.w);
