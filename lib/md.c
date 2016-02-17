@@ -41,8 +41,8 @@ void __md_setpins(_MD *self) {
 
 
 void init_md(void) {
-    md_init(&md1, &D[7], &D[8], 3e4, &oc7);
-    md_init(&md2, &D[6], &D[5], 3e4, &oc5);
+    md_init(&md1, &D[7], &D[8], 1e3, &oc7);
+    md_init(&md2, &D[6], &D[5], 1e3, &oc5);
 }
 
 void md_init(_MD *self, _PIN *pin1, _PIN *pin2, uint16_t freq, _OC *oc) {
