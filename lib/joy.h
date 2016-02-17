@@ -43,6 +43,8 @@ typedef struct {
     float w_1;
     float w;
 
+    float current;
+
     _TIMER *timer;
     WORD zero_angle;
     WORD last_enc_angle;

@@ -61,7 +61,9 @@ void __joy_loop(_TIMER *timer) {
         led_off(&led3);
     }
 
-    joy.w = joy.angle;
+    joy.current = (pin_read(&A[1])/65535.0*3.3 - 1.65)/.75;
+
+    joy.w = joy.current;
 
     uint16_t speed = min(max(fabsf(joy.w), JOY_MIN_SPEED), JOY_MAX_SPEED);
     md_velocity(&md1, speed, fabsf(joy.w)/joy.w);
@@ -80,6 +82,7 @@ void joy_init(_JOY *self, _TIMER *timer) {
     self->w = 0;
     self->w_1 = 0;
     self->w_2 = 0;
+    self->current = 0;
 
     timer_every(self->timer, 4e-3, *__joy_loop);
 }
