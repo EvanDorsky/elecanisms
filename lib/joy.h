@@ -39,9 +39,10 @@ void init_joy(void);
 
 typedef struct {
     float angle;
-    float w_2;
-    float w_1;
-    float w;
+
+    float current;
+    float cur_set;
+    float cur_err;
 
     _TIMER *timer;
     WORD zero_angle;

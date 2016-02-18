@@ -31,15 +31,21 @@
 // 360/(13.8096*16383)
 #define JOY_SCALE 0.001591
 // 360/13.8096
-#define JOY_WRAP_ANG 26.069
+#define JOY_WRAP_ANG 26.069 // deg
 #define JOY_ACONV(word) (float)word.i*JOY_SCALE
+#define JOY_STALL 2.0 // Amps
+#define JOY_R 5.0 // Ohms
+#define JOY_V 12.0 // Volts
+#define JOY_K 0.8
+
+#define JOY_DUTY(f) max(0x0000, (uint16_t)min(f*65535, 65535))
 
 _JOY joy;
 
 void __joy_wrap_detect(_JOY *self) {
     led_toggle(&led1);
 
-    WORD raw_angle = (WORD)(enc_angle(&enc).i - self->zero_angle.i);
+    WORD raw_angle = (WORD)(-(enc_angle(&enc).i - self->zero_angle.i));
     if (self->last_enc_angle.i - raw_angle.i > 8192) {
         self->wrap_count += 1;
         led_toggle(&led2);
@@ -49,7 +55,7 @@ void __joy_wrap_detect(_JOY *self) {
     }
 
     self->last_enc_angle = raw_angle;
-    self->angle = JOY_ACONV(raw_angle) - JOY_WRAP_ANG*self->wrap_count;
+    self->angle = JOY_ACONV(raw_angle) + JOY_WRAP_ANG*self->wrap_count;
 }
 
 void __joy_loop(_TIMER *timer) {
@@ -61,12 +67,12 @@ void __joy_loop(_TIMER *timer) {
         led_off(&led3);
     }
 
-    joy.w = joy.angle + joy.w_1;
+    joy.cur_set = joy.angle/45.0*JOY_STALL;
+    // joy.current = (pin_read(&A[0])/65535.0*3.3 - 1.65)/.75;
 
-    uint16_t speed = min(max(fabsf(joy.w), JOY_MIN_SPEED), JOY_MAX_SPEED);
-    md_velocity(&md1, speed, fabsf(joy.w)/joy.w);
+    // joy.cur_err = joy.cur_set - joy.current;
 
-    joy.w_1 = joy.w;
+    md_velocity(&md1, JOY_DUTY(fabsf(joy.cur_set*JOY_R/JOY_V*JOY_K)), fabsf(joy.cur_set)/joy.cur_set < 0);
 }
 
 
@@ -77,9 +83,9 @@ void init_joy(void) {
 void joy_init(_JOY *self, _TIMER *timer) {
     self->timer = timer;
     self->zero_angle = enc_angle(&enc);
-    self->w = 0;
-    self->w_1 = 0;
-    self->w_2 = 0;
+    self->current = 0;
+    self->cur_set = 0;
+    self->cur_err = 0;
 
     timer_every(self->timer, 4e-3, *__joy_loop);
 }
