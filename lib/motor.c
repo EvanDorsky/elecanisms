@@ -35,6 +35,7 @@
 
 _MOTOR motor1, motor2;
 
+float __vel_tmp = 0;
 void __motor_get_state(_MOTOR *self) {
     WORD raw_angle = (WORD)-(enc_angle(&enc).i - self->zero_angle.i);
     if (self->last_enc_pos.i - raw_angle.i > 8192) {
@@ -55,8 +56,13 @@ void __motor_get_state(_MOTOR *self) {
     else
         led_on(&led3);
 
-    self->vel_1 = self->vel;
-    self->vel = (self->pos - self->pos_1)/MOTOR_T;
+    __vel_tmp = (self->pos - self->pos_1)/MOTOR_T;
+    if (fabsf(__vel_tmp) > 1e37) { // overflow check
+        self->vel = self->vel_1;
+    } else {
+        self->vel_1 = self->vel;
+        self->vel = __vel_tmp;
+    }
 }
 
 // VERY VERY BAD
