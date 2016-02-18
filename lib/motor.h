@@ -40,7 +40,7 @@ typedef struct {
 
     WORD last_enc_pos;
     WORD zero_angle;
-    int8_t wrap_count;
+    int16_t wrap_count;
 
     float pos;
     float pos_1;
@@ -48,6 +48,7 @@ typedef struct {
     float vel_1;
 
     float vel_set;
+    float vel_set_1;
     float vel_err;
 
     _TIMER *timer;

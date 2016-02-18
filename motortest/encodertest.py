@@ -74,7 +74,7 @@ class encodertest:
 
     def enc_readReg(self, address):
         try:
-            ret = self.dev.ctrl_transfer(0xC0, self.ENC_READ_REG, address, 0, 4)
+            ret = self.dev.ctrl_transfer(0xC0, self.ENC_READ_REG, address, 0, 2)
         except usb.core.USBError:
             print "Could not send ENC_READ_REG vendor request."
         else:

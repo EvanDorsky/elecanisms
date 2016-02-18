@@ -42,13 +42,11 @@ void VendorRequests(void) {
             BD[EP0IN].status = 0xC8;         // send packet as DATA1, set UOWN bit
             break;
         case ENC_READ_REG:
-            result32 = (WORD32)motor1.vel_err;
+            result = (WORD)motor1.wrap_count;
             // result = (WORD)enc.wrap_count;
-            BD[EP0IN].address[0] = result32.b[0];
-            BD[EP0IN].address[1] = result32.b[1];
-            BD[EP0IN].address[2] = result32.b[2];
-            BD[EP0IN].address[3] = result32.b[3];
-            BD[EP0IN].bytecount = 4;         // set EP0 IN byte count to 4
+            BD[EP0IN].address[0] = result.b[0];
+            BD[EP0IN].address[1] = result.b[1];
+            BD[EP0IN].bytecount = 2;         // set EP0 IN byte count to 4
             BD[EP0IN].status = 0xC8;         // send packet as DATA1, set UOWN bit
             break;
         case TOGGLE_LED3:
