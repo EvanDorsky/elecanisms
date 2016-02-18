@@ -38,7 +38,7 @@
 #define JOY_V 12.0 // Volts
 #define JOY_K 0.8
 
-#define JOY_DUTY(f) max(0x0000, (uint16_t)min(f*65535, 65535))
+#define JOY_DUTY(f) max(0x0000, (uint16_t)min(f, 65535))
 
 _JOY joy;
 
@@ -68,11 +68,14 @@ void __joy_loop(_TIMER *timer) {
     }
 
     joy.cur_set = joy.angle/45.0*JOY_STALL;
-    // joy.current = (pin_read(&A[0])/65535.0*3.3 - 1.65)/.75;
+    joy.current = (pin_read(&A[0])/65535.0*3.3 - 1.65)/.75;
 
-    // joy.cur_err = joy.cur_set - joy.current;
+    joy.err = joy.cur_set - joy.current;
 
-    md_velocity(&md1, JOY_DUTY(fabsf(joy.cur_set*JOY_R/JOY_V*JOY_K)), fabsf(joy.cur_set)/joy.cur_set < 0);
+    joy.vel = joy.vel_1 + joy.err*.004002;
+    joy.vel_1 = joy.vel;
+
+    md_velocity(&md1, JOY_DUTY(fabsf(joy.vel*9000)), fabsf(joy.vel)/joy.vel < 0);
 }
 
 
@@ -85,7 +88,10 @@ void joy_init(_JOY *self, _TIMER *timer) {
     self->zero_angle = enc_angle(&enc);
     self->current = 0;
     self->cur_set = 0;
-    self->cur_err = 0;
+    self->err = 0;
+
+    self->vel = 0;
+    self->vel_1 = 0;
 
     timer_every(self->timer, 4e-3, *__joy_loop);
 }

@@ -8,7 +8,6 @@ tau = 1e-3;
 M = K/(tau*s+1);
 
 Kp = 1;
-L = tf(K, (1+K));
-% L = 1/s;
+L = 1/s;
 
-c2d(L, 1e-2, 'matched')
+c2d(L, 4e-3, 'matched')

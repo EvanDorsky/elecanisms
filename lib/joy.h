@@ -42,7 +42,10 @@ typedef struct {
 
     float current;
     float cur_set;
-    float cur_err;
+    float err;
+
+    float vel;
+    float vel_1;
 
     _TIMER *timer;
     WORD zero_angle;
