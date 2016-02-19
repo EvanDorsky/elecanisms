@@ -57,7 +57,7 @@ void __motor_get_state(_MOTOR *self) {
         led_on(&led3);
 
     __vel_tmp = (self->pos - self->pos_1)/MOTOR_T;
-    if (fabsf(__vel_tmp) > 1e37) { // overflow check
+    if (fabsf(__vel_tmp) > 1e5) { // overflow check
         self->vel = self->vel_1;
     } else {
         self->vel_1 = self->vel;
