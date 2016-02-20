@@ -26,7 +26,12 @@
 #include <p24FJ128GB206.h>
 #include "joy.h"
 
-#define JOY_MAX_SPEED 0xFFFF
+#define JOY_MODE_SPRING  0
+#define JOY_MODE_WALL    1
+#define JOY_MODE_DAMPER  2
+#define JOY_MODE_TEXTURE 3
+
+#define JOY_MAX_SPEED 0xFF00
 #define JOY_MIN_SPEED 0x2000
 // 360/(13.8096*16383)
 #define JOY_SCALE 0.001591
@@ -67,6 +72,20 @@ void __joy_loop(_TIMER *timer) {
         led_off(&led3);
     }
 
+    switch (joy.mode) {
+        case JOY_MODE_SPRING:
+            __joy_spring(&joy);
+            break;
+        case JOY_MODE_WALL:
+            break;
+        case JOY_MODE_DAMPER:
+            break;
+        case JOY_MODE_TEXTURE:
+            break;
+    }
+}
+
+void __joy_spring(_JOY *self) {
     joy.cur_set = joy.angle/45.0*JOY_STALL;
     joy.current = (pin_read(&A[0])/65535.0*3.3 - 1.65)/.75;
 
@@ -75,15 +94,29 @@ void __joy_loop(_TIMER *timer) {
     joy.vel = joy.vel_1 + joy.err*.004002;
     joy.vel_1 = joy.vel;
 
-    md_velocity(&md1, JOY_DUTY(fabsf(joy.vel*9000)), fabsf(joy.vel)/joy.vel < 0);
+    md_velocity(&md1, JOY_DUTY(fabsf(joy.vel*9000)), sign(joy.vel) < 0);
 }
 
+void __joy_wall(_JOY *self) {
+    if (self->angle >= self->right)
+        md_velocity(&md1, JOY_MAX_SPEED, 1);
+    else if (self->angle <= self->left)
+        md_velocity(&md1, JOY_MAX_SPEED, 0);
+}
 
 void init_joy(void) {
     joy_init(&joy, &timer4);
 }
 
 void joy_init(_JOY *self, _TIMER *timer) {
+    self->mode = 0;
+
+    // spring
+    self->K = 1;
+    // wall
+    self->left = -30;
+    self->right = 30;
+
     self->timer = timer;
     self->zero_angle = enc_angle(&enc);
     self->current = 0;

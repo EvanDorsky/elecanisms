@@ -38,6 +38,14 @@
 void init_joy(void);
 
 typedef struct {
+    uint8_t mode;
+
+    // spring
+    uint16_t K;
+    // wall
+    int16_t left;
+    int16_t right;
+
     float angle;
 
     float current;
