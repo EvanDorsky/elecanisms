@@ -32,8 +32,8 @@
 #define JOY_MODE_TEXTURE 3
 #define JOY_MODE_FREE    4
 
-#define JOY_MAX_SPEED 0x8000
-#define JOY_MIN_SPEED 0x2000
+#define JOY_MAX_SPEED 0xFFFF
+#define JOY_MIN_SPEED 0x0200
 // 360/(13.8096*16383)
 #define JOY_SCALE 0.001591
 // 360/13.8096
@@ -107,7 +107,7 @@ void __joy_wall(_JOY *self) {
     } else {
         led_off(&led1);
         led_off(&led2);
-        md_speed(&md1, 0);
+        md_speed(&md1, JOY_MIN_SPEED);
     }
 }
 
