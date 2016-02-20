@@ -30,8 +30,9 @@
 #define JOY_MODE_WALL    1
 #define JOY_MODE_DAMPER  2
 #define JOY_MODE_TEXTURE 3
+#define JOY_MODE_FREE    4
 
-#define JOY_MAX_SPEED 0xFF00
+#define JOY_MAX_SPEED 0x8000
 #define JOY_MIN_SPEED 0x2000
 // 360/(13.8096*16383)
 #define JOY_SCALE 0.001591
@@ -48,16 +49,11 @@
 _JOY joy;
 
 void __joy_wrap_detect(_JOY *self) {
-    led_toggle(&led1);
-
     WORD raw_angle = (WORD)(-(enc_angle(&enc).i - self->zero_angle.i));
-    if (self->last_enc_angle.i - raw_angle.i > 8192) {
+    if (self->last_enc_angle.i - raw_angle.i > 8192)
         self->wrap_count += 1;
-        led_toggle(&led2);
-    } else if (self->last_enc_angle.i - raw_angle.i < -8192) {
+    else if (self->last_enc_angle.i - raw_angle.i < -8192)
         self->wrap_count -= 1;
-        led_toggle(&led2);
-    }
 
     self->last_enc_angle = raw_angle;
     self->angle = JOY_ACONV(raw_angle) + JOY_WRAP_ANG*self->wrap_count;
@@ -77,10 +73,13 @@ void __joy_loop(_TIMER *timer) {
             __joy_spring(&joy);
             break;
         case JOY_MODE_WALL:
+            __joy_wall(&joy);
             break;
         case JOY_MODE_DAMPER:
             break;
         case JOY_MODE_TEXTURE:
+            break;
+        case JOY_MODE_FREE:
             break;
     }
 }
@@ -98,10 +97,18 @@ void __joy_spring(_JOY *self) {
 }
 
 void __joy_wall(_JOY *self) {
-    if (self->angle >= self->right)
-        md_velocity(&md1, JOY_MAX_SPEED, 1);
-    else if (self->angle <= self->left)
+    if (self->angle >= self->right) {
         md_velocity(&md1, JOY_MAX_SPEED, 0);
+        led_on(&led2);
+    }
+    else if (self->angle <= self->left) {
+        md_velocity(&md1, JOY_MAX_SPEED, 1);
+        led_on(&led1);
+    } else {
+        led_off(&led1);
+        led_off(&led2);
+        md_speed(&md1, 0);
+    }
 }
 
 void init_joy(void) {
@@ -109,7 +116,7 @@ void init_joy(void) {
 }
 
 void joy_init(_JOY *self, _TIMER *timer) {
-    self->mode = 0;
+    self->mode = 1;
 
     // spring
     self->K = 1;
