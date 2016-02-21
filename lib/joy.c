@@ -39,12 +39,12 @@
 // 360/13.8096
 #define JOY_WRAP_ANG 26.069 // deg
 #define JOY_ACONV(word) (float)word.i*JOY_SCALE
-#define JOY_STALL 2.0 // Amps
+#define JOY_STALL 3.0 // Amps
 #define JOY_R 5.0 // Ohms
 #define JOY_V 12.0 // Volts
 #define JOY_K 0.8
 
-#define JOY_DUTY(f) max(0x0000, (uint16_t)min(f, 65535))
+#define JOY_DUTY(f) max(0x0000, (uint16_t)min(f*65535, 65535))
 
 _JOY joy;
 
@@ -58,6 +58,9 @@ void __joy_wrap_detect(_JOY *self) {
     self->last_enc_angle = raw_angle;
     self->angle = JOY_ACONV(raw_angle) + JOY_WRAP_ANG*self->wrap_count;
 }
+
+void __joy_spring(_JOY *self);
+void __joy_wall(_JOY *self);
 
 void __joy_loop(_TIMER *timer) {
     __joy_wrap_detect(&joy);
@@ -110,7 +113,7 @@ void init_joy(void) {
 }
 
 void joy_init(_JOY *self, _TIMER *timer) {
-    self->mode = 1;
+    self->mode = 0;
 
     // spring
     self->K = 1;

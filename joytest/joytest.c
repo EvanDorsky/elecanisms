@@ -62,7 +62,7 @@ void VendorRequests(void) {
             BD[EP0IN].status = 0xC8;
             break;
         case JOY_READ_ANGLE:
-            result32 = (WORD32)joy.angle;
+            result32 = (WORD32)joy.cur_set;
             BD[EP0IN].address[0] = result32.b[0];
             BD[EP0IN].address[1] = result32.b[1];
             BD[EP0IN].address[2] = result32.b[2];
