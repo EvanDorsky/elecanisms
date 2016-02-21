@@ -8,7 +8,7 @@ class encodertest:
         self.TOGGLE_LED1 = 1
         self.TOGGLE_LED2 = 2
         self.READ_SW1 = 3
-        self.ENC_READ_REG = 5
+        self.JOY_READ_ANGLE = 5
         self.TOGGLE_LED3 = 8
         self.READ_SW2 = 9
         self.READ_SW3 = 10
@@ -78,11 +78,11 @@ class encodertest:
         else:
             return int(ret[0])
 
-    def enc_readReg(self, address):
+    def joy_read_angle(self):
         try:
-            ret = self.dev.ctrl_transfer(0xC0, self.ENC_READ_REG, address, 0, 4)
+            ret = self.dev.ctrl_transfer(0xC0, self.JOY_READ_ANGLE, 0, 0, 4)
         except usb.core.USBError:
-            print "Could not send ENC_READ_REG vendor request."
+            print "Could not send JOY_READ_ANGLE vendor request."
         else:
             return ret
 

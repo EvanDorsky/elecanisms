@@ -77,10 +77,10 @@ def wallmode():
 	print "Mode:{0:0f}".format(mode)
 
 	# read the angle from the encoder
-	angleBytes = enc.enc_readReg(enc.ENC_ANGLE_AFTER_ZERO_POS_ADDER)
+	angleBytes = enc.joy_read_angle()
 	print angleBytes
 	angleStr = ''.join(map(chr, angleBytes))
-	angle, = struct.unpack('h', angleStr)
+	angle, = struct.unpack('f', angleStr)
 
 	xcenter = 150 + angle*2   #set the center of the circle based on the angle reading
 
@@ -109,10 +109,10 @@ def updateCanvas():
 	global y2
 
 	# read the angle from the encoder
-	angleBytes = enc.enc_readReg(enc.ENC_ANGLE_AFTER_ZERO_POS_ADDER)
+	angleBytes = enc.joy_read_angle()
 
 	angleStr = ''.join(map(chr, angleBytes))
-	angle, = struct.unpack('h', angleStr)
+	angle, = struct.unpack('f', angleStr)
 
 	xcenter = 150 + angle*2     # set the center of the circle based on the angle reading
 
