@@ -55,6 +55,14 @@
        __typeof__ (b) _b = (b); \
      _a < _b ? _a : _b; })
 
+#define sign(x) \
+   ({ __typeof__ (x) _x = (x); \
+     (_x > 0) - (_x < 0); })
+
+#define clamp(x, l, h) \
+   ({ __typeof__ (x) _x = (x); \
+     max(l, min(x, h)); })
+
 typedef union {
     int16_t i;
     uint16_t w;

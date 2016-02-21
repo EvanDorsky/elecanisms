@@ -26,37 +26,40 @@
 #include <p24FJ128GB206.h>
 #include "joy.h"
 
+#define JOY_MODE_SPRING  0
+#define JOY_MODE_WALL    1
+#define JOY_MODE_DAMPER  2
+#define JOY_MODE_TEXTURE 3
+#define JOY_MODE_FREE    4
+
 #define JOY_MAX_SPEED 0xFFFF
-#define JOY_MIN_SPEED 0x2000
+#define JOY_MIN_SPEED 0x0200
 // 360/(13.8096*16383)
 #define JOY_SCALE 0.001591
 // 360/13.8096
 #define JOY_WRAP_ANG 26.069 // deg
 #define JOY_ACONV(word) (float)word.i*JOY_SCALE
-#define JOY_STALL 2.0 // Amps
+#define JOY_STALL 3.0 // Amps
 #define JOY_R 5.0 // Ohms
 #define JOY_V 12.0 // Volts
-#define JOY_K 0.8
 
 #define JOY_DUTY(f) max(0x0000, (uint16_t)min(f*65535, 65535))
 
 _JOY joy;
 
 void __joy_wrap_detect(_JOY *self) {
-    led_toggle(&led1);
-
     WORD raw_angle = (WORD)(-(enc_angle(&enc).i - self->zero_angle.i));
-    if (self->last_enc_angle.i - raw_angle.i > 8192) {
+    if (self->last_enc_angle.i - raw_angle.i > 8192)
         self->wrap_count += 1;
-        led_toggle(&led2);
-    } else if (self->last_enc_angle.i - raw_angle.i < -8192) {
+    else if (self->last_enc_angle.i - raw_angle.i < -8192)
         self->wrap_count -= 1;
-        led_toggle(&led2);
-    }
 
     self->last_enc_angle = raw_angle;
     self->angle = JOY_ACONV(raw_angle) + JOY_WRAP_ANG*self->wrap_count;
 }
+
+void __joy_spring(_JOY *self);
+void __joy_wall(_JOY *self);
 
 void __joy_loop(_TIMER *timer) {
     __joy_wrap_detect(&joy);
@@ -67,25 +70,64 @@ void __joy_loop(_TIMER *timer) {
         led_off(&led3);
     }
 
-    joy.cur_set = joy.angle/45.0*JOY_STALL;
-    // joy.current = (pin_read(&A[0])/65535.0*3.3 - 1.65)/.75;
-
-    // joy.cur_err = joy.cur_set - joy.current;
-
-    md_velocity(&md1, JOY_DUTY(fabsf(joy.cur_set*JOY_R/JOY_V*JOY_K)), fabsf(joy.cur_set)/joy.cur_set < 0);
+    switch (joy.mode) {
+        case JOY_MODE_SPRING:
+            __joy_spring(&joy);
+            break;
+        case JOY_MODE_WALL:
+            __joy_wall(&joy);
+            break;
+        case JOY_MODE_DAMPER:
+            break;
+        case JOY_MODE_TEXTURE:
+            break;
+        case JOY_MODE_FREE:
+            break;
+    }
 }
 
+void __joy_spring(_JOY *self) {
+    joy.cur_set = joy.angle/45.0*JOY_STALL;
+
+    md_velocity(&md1, JOY_DUTY(fabsf(joy.cur_set*joy.K*JOY_R/JOY_V)), sign(joy.cur_set) < 0);
+}
+
+void __joy_wall(_JOY *self) {
+    if (self->angle >= self->right) {
+        md_velocity(&md1, JOY_MAX_SPEED, 0);
+        led_on(&led2);
+    }
+    else if (self->angle <= self->left) {
+        md_velocity(&md1, JOY_MAX_SPEED, 1);
+        led_on(&led1);
+    } else {
+        led_off(&led1);
+        led_off(&led2);
+        md_speed(&md1, JOY_MIN_SPEED);
+    }
+}
 
 void init_joy(void) {
     joy_init(&joy, &timer4);
 }
 
 void joy_init(_JOY *self, _TIMER *timer) {
+    self->mode = 0;
+
+    // spring
+    self->K = 1.0;
+    // wall
+    self->left = -30;
+    self->right = 30;
+
     self->timer = timer;
     self->zero_angle = enc_angle(&enc);
     self->current = 0;
     self->cur_set = 0;
-    self->cur_err = 0;
+    self->err = 0;
+
+    self->vel = 0;
+    self->vel_1 = 0;
 
     timer_every(self->timer, 4e-3, *__joy_loop);
 }

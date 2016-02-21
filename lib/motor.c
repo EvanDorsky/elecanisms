@@ -28,13 +28,14 @@
 
 #define MOTOR_MIN_SPEED 0x0000
 #define MOTOR_MAX_SPEED 0xF000
-#define MOTOR_T         1e-2
+#define MOTOR_T         4e-3
 #define MOTOR_SCALE 0.02197399744 // 360/16383
 #define MOTOR_WRAP_ANG 360
 #define MOTOR_ACONV(word) (float)word.i*MOTOR_SCALE
 
 _MOTOR motor1, motor2;
 
+float __vel_tmp = 0;
 void __motor_get_state(_MOTOR *self) {
     WORD raw_angle = (WORD)-(enc_angle(&enc).i - self->zero_angle.i);
     if (self->last_enc_pos.i - raw_angle.i > 8192) {
@@ -55,8 +56,13 @@ void __motor_get_state(_MOTOR *self) {
     else
         led_on(&led3);
 
-    self->vel_1 = self->vel;
-    self->vel = (self->pos - self->pos_1)/MOTOR_T;
+    __vel_tmp = (self->pos - self->pos_1)/MOTOR_T;
+    if (fabsf(__vel_tmp) > 1e5) { // overflow check
+        self->vel = self->vel_1;
+    } else {
+        self->vel_1 = self->vel;
+        self->vel = __vel_tmp;
+    }
 }
 
 // VERY VERY BAD
@@ -67,8 +73,13 @@ void __motor_loop(_TIMER *timer) {
 
     __ml_motor->vel_err = __ml_motor->vel_set - __ml_motor->vel;
 
-    uint16_t speed = min(max(fabsf(__ml_motor->vel_err)*10, MOTOR_MIN_SPEED), MOTOR_MAX_SPEED);
-    md_velocity(__ml_motor->md, speed, fabsf(__ml_motor->vel_err)/__ml_motor->vel_err < 0);
+    __ml_motor->vel_set = __ml_motor->vel_set_1 + MOTOR_T*__ml_motor->vel_err;
+
+    md_velocity(__ml_motor->md,
+        clamp(fabsf(__ml_motor->vel_set), MOTOR_MIN_SPEED, MOTOR_MAX_SPEED),
+        sign(__ml_motor->vel_set) < 0);
+
+    __ml_motor->vel_set_1 = __ml_motor->vel_set;
 }
 
 void init_motor(void) {
@@ -85,7 +96,8 @@ void motor_init(_MOTOR *self, _ENC *enc, _MD *md, _TIMER *timer) {
     self->vel_1 = 0;
 
     self->vel_err = 0;
-    self->vel_set = 360;
+    self->vel_set = 100;
+    self->vel_set_1 = 100;
     self->zero_angle = enc_angle(self->enc);
 
     self->timer = timer;

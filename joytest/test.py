@@ -7,7 +7,7 @@ enc = encodertest.encodertest()
 enc.toggle_led3()
 
 while (True):
-    angleBytes = enc.enc_readReg(enc.ENC_ANGLE_AFTER_ZERO_POS_ADDER)
+    angleBytes = enc.joy_read_angle()
 
     angleStr = ''.join(map(chr, angleBytes))
 
