@@ -70,6 +70,14 @@ void VendorRequests(void) {
             BD[EP0IN].bytecount = 4;
             BD[EP0IN].status = 0xC8;
             break;
+        case JOY_SET_K:
+            input = USB_setup.wValue;
+            joy.K = (float)input/1000.0;
+            BD[EP0IN].address[0] = input.b[0];
+            BD[EP0IN].address[1] = input.b[1];
+            BD[EP0IN].bytecount = 2;
+            BD[EP0IN].status = 0xC8;
+            break;
         case JOY_SET_MODE:
             input = USB_setup.wValue;
             joy.mode = input.b[0];
