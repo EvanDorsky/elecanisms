@@ -17,7 +17,7 @@
 #define READ_SW1            3
 #define READ_SW2            9
 #define READ_SW3            10
-#define ENC_READ_REG        5
+#define JOY_READ_ANGLE      5
 
 #define JOY_SET_MODE        20
 #define JOY_SET_K           21
@@ -61,11 +61,13 @@ void VendorRequests(void) {
             BD[EP0IN].bytecount = 1;
             BD[EP0IN].status = 0xC8;
             break;
-        case ENC_READ_REG:
-            result32 = (WORD32)joy.err;
+        case JOY_READ_ANGLE:
+            result32 = (WORD32)joy.angle;
             BD[EP0IN].address[0] = result32.b[0];
             BD[EP0IN].address[1] = result32.b[1];
-            BD[EP0IN].bytecount = 2;
+            BD[EP0IN].address[2] = result32.b[2];
+            BD[EP0IN].address[3] = result32.b[3];
+            BD[EP0IN].bytecount = 4;
             BD[EP0IN].status = 0xC8;
             break;
         case JOY_SET_MODE:
