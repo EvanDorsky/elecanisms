@@ -86,14 +86,8 @@ void __joy_loop(_TIMER *timer) {
 
 void __joy_spring(_JOY *self) {
     joy.cur_set = joy.angle/45.0*JOY_STALL;
-    joy.current = (pin_read(&A[0])/65535.0*3.3 - 1.65)/.75;
 
-    joy.err = joy.cur_set - joy.current;
-
-    joy.vel = joy.vel_1 + joy.err*.004002;
-    joy.vel_1 = joy.vel;
-
-    md_velocity(&md1, JOY_DUTY(fabsf(joy.vel*9000)), sign(joy.vel) < 0);
+    md_velocity(&md1, JOY_DUTY(fabsf(joy.cur_set*JOY_K*JOY_R/JOY_V)), sign(joy.cur_set) < 0);
 }
 
 void __joy_wall(_JOY *self) {
