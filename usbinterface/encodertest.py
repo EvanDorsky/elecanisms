@@ -12,7 +12,12 @@ class encodertest:
         self.TOGGLE_LED3 = 8
         self.READ_SW2 = 9
         self.READ_SW3 = 10
-        self.WRITE_KS = 11
+        # self.WRITE_KS = 11
+        self.JOY_SET_MODE = 20
+        self.JOY_SET_K = 21
+        self.JOY_SET_WALL_LEFT = 22
+        self.JOY_SET_WALL_RIGHT = 23
+
         self.dev = usb.core.find(idVendor = 0x6666, idProduct = 0x0003)
         if self.dev is None:
             raise ValueError('no USB device found matching idVendor = 0x6666 and idProduct = 0x0003')
@@ -75,16 +80,48 @@ class encodertest:
 
     def enc_readReg(self, address):
         try:
-            ret = self.dev.ctrl_transfer(0xC0, self.ENC_READ_REG, address, 0, 2)
+            ret = self.dev.ctrl_transfer(0xC0, self.ENC_READ_REG, address, 0, 4)
         except usb.core.USBError:
             print "Could not send ENC_READ_REG vendor request."
         else:
             return ret
 
-    def write_ks(self, value):
+    # def write_ks(self, value):
+    #     try:
+    #         ret = self.dev.ctrl_transfer(0xC0, self.WRITE_KS, value, 0, 2)
+    #     except usb.core.USBError:
+    #         print "Could not send WRITE_KS vendor request."
+    #     else:
+    #         return ret
+
+    def joy_set_mode(self, value):
         try:
-            ret = self.dev.ctrl_transfer(0xC0, self.WRITE_KS, value, 0, 2)
+            ret = self.dev.ctrl_transfer(0xC0, self.JOY_SET_MODE, value, 0, 2)
         except usb.core.USBError:
-            print "Could not send WRITE_KS vendor request."
+            print "Could not send JOY_SET_MODE vendor request."
+        else:
+            return ret
+
+    def joy_set_k(self, value):
+        try:
+            ret = self.dev.ctrl_transfer(0xC0, self.JOY_SET_K, value, 0, 2)
+        except usb.core.USBError:
+            print "Could not send JOY_SET_K vendor request."
+        else:
+            return ret
+
+    def joy_set_wall_left(self, value):
+        try:
+            ret = self.dev.ctrl_transfer(0xC0, self.JOY_SET_WALL_LEFT, value, 0, 2)
+        except usb.core.USBError:
+            print "Could not send JOY_SET_WALL_LEFT vendor request."
+        else:
+            return 
+
+    def joy_set_wall_right(self, value):
+        try:
+            ret = self.dev.ctrl_transfer(0xC0, self.JOY_SET_WALL_RIGHT, value, 0, 2)
+        except usb.core.USBError:
+            print "Could not send JOY_SET_WALL_RIGHT vendor request."
         else:
             return ret
