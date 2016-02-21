@@ -42,7 +42,6 @@
 #define JOY_STALL 3.0 // Amps
 #define JOY_R 5.0 // Ohms
 #define JOY_V 12.0 // Volts
-#define JOY_K 0.8
 
 #define JOY_DUTY(f) max(0x0000, (uint16_t)min(f*65535, 65535))
 
@@ -90,7 +89,7 @@ void __joy_loop(_TIMER *timer) {
 void __joy_spring(_JOY *self) {
     joy.cur_set = joy.angle/45.0*JOY_STALL;
 
-    md_velocity(&md1, JOY_DUTY(fabsf(joy.cur_set*JOY_K*JOY_R/JOY_V)), sign(joy.cur_set) < 0);
+    md_velocity(&md1, JOY_DUTY(fabsf(joy.cur_set*joy.K*JOY_R/JOY_V)), sign(joy.cur_set) < 0);
 }
 
 void __joy_wall(_JOY *self) {
@@ -116,7 +115,7 @@ void joy_init(_JOY *self, _TIMER *timer) {
     self->mode = 0;
 
     // spring
-    self->K = 1;
+    self->K = 1.0;
     // wall
     self->left = -30;
     self->right = 30;

@@ -41,7 +41,7 @@ typedef struct {
     uint8_t mode;
 
     // spring
-    uint16_t K;
+    float K;
     // wall
     int16_t left;
     int16_t right;
