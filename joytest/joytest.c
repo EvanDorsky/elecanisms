@@ -23,6 +23,7 @@
 #define JOY_SET_K           21
 #define JOY_SET_WALL_LEFT   22
 #define JOY_SET_WALL_RIGHT  23
+#define JOY_SET_B           24
 
 void VendorRequests(void) {
     WORD32 address;
@@ -77,9 +78,18 @@ void VendorRequests(void) {
             BD[EP0IN].address[1] = input.b[1];
             BD[EP0IN].bytecount = 2;
             BD[EP0IN].status = 0xC8;
+            break;
         case JOY_SET_K:
             input = USB_setup.wValue;
             joy.K = (float)input.i/1000.0;
+            BD[EP0IN].address[0] = input.b[0];
+            BD[EP0IN].address[1] = input.b[1];
+            BD[EP0IN].bytecount = 2;
+            BD[EP0IN].status = 0xC8;
+            break;
+        case JOY_SET_B:
+            input = USB_setup.wValue;
+            joy.B = (float)input.i/1000.0;
             BD[EP0IN].address[0] = input.b[0];
             BD[EP0IN].address[1] = input.b[1];
             BD[EP0IN].bytecount = 2;
