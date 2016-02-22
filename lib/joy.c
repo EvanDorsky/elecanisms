@@ -106,7 +106,8 @@ void __joy_loop(_TIMER *timer) {
 void __joy_spring(_JOY *self) {
     self->cur_set = self->angle/45.0*JOY_STALL;
 
-    md_velocity(&md1, JOY_DUTY(fabsf(self->cur_set*self->K)/JOY_STALL), sign(self->cur_set) < 0);
+    self->cmd = JOY_DUTY(fabsf(self->cur_set*self->K)/JOY_STALL);
+    md_velocity(&md1, self->cmd, sign(self->cur_set) < 0);
 }
 
 void __joy_wall(_JOY *self) {
@@ -128,7 +129,8 @@ float __vel = 0;
 void __joy_damp(_JOY *self) {
     __vel = fabsf(self->vel);
     if (__vel > 20) {
-        md_velocity(&md1, JOY_DUTY(__vel*self->B/1080.0), sign(self->vel) < 0);
+        self->cmd = JOY_DUTY(__vel*self->B/1080.0);
+        md_velocity(&md1, self->cmd, sign(self->vel) < 0);
     }
 }
 float __dir = 0;
@@ -144,10 +146,13 @@ void __joy_texture(_JOY *self) {
         __dir = -1;
     }
     if (__vel > 20) {
-        if (__dir > 0)
-            md_velocity(&md1, JOY_DUTY(__vel*7.0/1080.0), sign(self->vel) < 0);
-        else
-            md_velocity(&md1, JOY_DUTY(__vel*1.5/1080.0), sign(self->vel) < 0);
+        if (__dir > 0) {
+            self->cmd = JOY_DUTY(__vel*7.0/1080.0);
+            md_velocity(&md1, self->cmd, sign(self->vel) < 0);
+        } else {
+            self->cmd = JOY_DUTY(__vel*1.5/1080.0);
+            md_velocity(&md1, self->cmd, sign(self->vel) < 0);
+        }
     }
 }
 
@@ -157,6 +162,8 @@ void init_joy(void) {
 
 void joy_init(_JOY *self, _TIMER *timer) {
     self->mode = JOY_MODE_FREE;
+
+    self->cmd = 0;
 
     // spring
     self->K = 1.0;

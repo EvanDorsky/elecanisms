@@ -58,6 +58,8 @@ typedef struct {
     float vel;
     float vel_1;
 
+    uint16_t cmd;
+
     _TIMER *timer;
     WORD zero_angle;
     WORD last_enc_angle;
