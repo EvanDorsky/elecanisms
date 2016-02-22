@@ -111,5 +111,8 @@ int16_t main(void) {
     }
     while (1) {
         ServiceUSB();
+        if (!sw_read(&sw1)) {
+            md_reset(&md1);
+        }
     }
 }
