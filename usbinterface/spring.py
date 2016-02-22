@@ -4,15 +4,13 @@ import struct
 from numpy import *
 import pickle
 
-mask = 0x3FFF
 joy = encodertest.encodertest()
-
-joy.toggle_led3()
 
 samples = 5000
 encpos = zeros(samples)
 encvel = zeros(samples)
 encD = zeros(samples)
+encdir = zeros(samples)
 times = zeros(samples)
 raw = 0
 
@@ -20,7 +18,10 @@ last = time.clock()
 step = 1e-3
 i = 0
 
-JOY_SPRING = 1
+JOY_MODE_WALL = 0
+JOY_MODE_SPRING = 1
+JOY_MODE_DAMPER = 2
+JOY_MODE_TEXTURE = 3
 
 def readAngle():
     bts = joy.joy_read_angle()
@@ -46,7 +47,16 @@ def readD():
 
     return res
 
-joy.joy_set_mode(JOY_SPRING)
+def readDir():
+    bts = joy.joy_read_dir()
+    chrs = ''.join(map(chr, bts))
+
+    res, = struct.unpack('h', chrs)
+
+    return res
+
+joy.joy_set_mode(JOY_MODE_DAMPER)
+joy.joy_set_b(5000)
 while(i < samples):
     current = time.clock()
 
@@ -57,6 +67,7 @@ while(i < samples):
         encpos[i] = readAngle()
         encvel[i] = readVel()
         encD[i] = readD()
+        encdir[i] = readDir()
 
         i+=1
 
@@ -64,5 +75,6 @@ pickle.dump({
     'position' : encpos,
     'velocity' : encvel,
     'duty' : encD,
+    'direction' : encdir,
     'time'     : times
-    }, open('spring.p', 'wb'))
+    }, open('spring2.p', 'wb'))

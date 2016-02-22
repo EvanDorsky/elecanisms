@@ -112,15 +112,18 @@ void __joy_spring(_JOY *self) {
 
 void __joy_wall(_JOY *self) {
     if (self->angle >= self->right) {
+        self->cmd = JOY_MAX_SPEED;
         md_velocity(&md1, JOY_MAX_SPEED, 0);
         led_on(&led2);
     }
     else if (self->angle <= self->left) {
+        self->cmd = JOY_MAX_SPEED;
         md_velocity(&md1, JOY_MAX_SPEED, 1);
         led_on(&led1);
     } else {
         led_off(&led1);
         led_off(&led2);
+        self->cmd = JOY_MIN_SPEED;
         md_speed(&md1, JOY_MIN_SPEED);
     }
 }

@@ -21,6 +21,7 @@ class encodertest:
         self.JOY_SET_B = 24
         self.JOY_READ_VEL = 25
         self.JOY_READ_D = 26
+        self.JOY_READ_DIR = 27
 
         self.dev = usb.core.find(idVendor = 0x6666, idProduct = 0x0003)
         if self.dev is None:
@@ -151,5 +152,13 @@ class encodertest:
             ret = self.dev.ctrl_transfer(0xC0, self.JOY_READ_D, 0, 0, 4)
         except usb.core.USBError:
             print "Could not send JOY_READ_D vendor request."
+        else:
+            return ret
+
+    def joy_read_dir(self):
+        try:
+            ret = self.dev.ctrl_transfer(0xC0, self.JOY_READ_DIR, 0, 0, 2)
+        except usb.core.USBError:
+            print "Could not send JOY_READ_DIR vendor request."
         else:
             return ret
