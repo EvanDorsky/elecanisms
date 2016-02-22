@@ -9,7 +9,7 @@ joy = encodertest.encodertest()
 
 joy.toggle_led3()
 
-samples = 1000
+samples = 5000
 encpos = zeros(samples)
 encvel = zeros(samples)
 encD = zeros(samples)
