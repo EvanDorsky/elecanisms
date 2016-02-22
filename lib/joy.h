@@ -42,11 +42,14 @@ typedef struct {
 
     // spring
     float K;
+    // damper
+    float B;
     // wall
     int16_t left;
     int16_t right;
 
     float angle;
+    float angle_1;
 
     float current;
     float cur_set;
@@ -54,6 +57,8 @@ typedef struct {
 
     float vel;
     float vel_1;
+
+    uint16_t cmd;
 
     _TIMER *timer;
     WORD zero_angle;

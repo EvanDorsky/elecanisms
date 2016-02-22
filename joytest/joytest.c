@@ -23,6 +23,9 @@
 #define JOY_SET_K           21
 #define JOY_SET_WALL_LEFT   22
 #define JOY_SET_WALL_RIGHT  23
+#define JOY_SET_B           24
+#define JOY_READ_VEL        25
+#define JOY_READ_D          26
 
 void VendorRequests(void) {
     WORD32 address;
@@ -70,12 +73,22 @@ void VendorRequests(void) {
             BD[EP0IN].bytecount = 4;
             BD[EP0IN].status = 0xC8;
             break;
-        case JOY_SET_K:
-            input = USB_setup.wValue;
-            joy.K = (float)input/1000.0;
-            BD[EP0IN].address[0] = input.b[0];
-            BD[EP0IN].address[1] = input.b[1];
-            BD[EP0IN].bytecount = 2;
+        case JOY_READ_VEL:
+            result32 = (WORD32)joy.vel;
+            BD[EP0IN].address[0] = result32.b[0];
+            BD[EP0IN].address[1] = result32.b[1];
+            BD[EP0IN].address[2] = result32.b[2];
+            BD[EP0IN].address[3] = result32.b[3];
+            BD[EP0IN].bytecount = 4;
+            BD[EP0IN].status = 0xC8;
+            break;
+        case JOY_READ_D:
+            result32 = (WORD32)((float)joy.cmd/65535.0);
+            BD[EP0IN].address[0] = result32.b[0];
+            BD[EP0IN].address[1] = result32.b[1];
+            BD[EP0IN].address[2] = result32.b[2];
+            BD[EP0IN].address[3] = result32.b[3];
+            BD[EP0IN].bytecount = 4;
             BD[EP0IN].status = 0xC8;
             break;
         case JOY_SET_MODE:
@@ -85,9 +98,18 @@ void VendorRequests(void) {
             BD[EP0IN].address[1] = input.b[1];
             BD[EP0IN].bytecount = 2;
             BD[EP0IN].status = 0xC8;
+            break;
         case JOY_SET_K:
             input = USB_setup.wValue;
             joy.K = (float)input.i/1000.0;
+            BD[EP0IN].address[0] = input.b[0];
+            BD[EP0IN].address[1] = input.b[1];
+            BD[EP0IN].bytecount = 2;
+            BD[EP0IN].status = 0xC8;
+            break;
+        case JOY_SET_B:
+            input = USB_setup.wValue;
+            joy.B = (float)input.i/1000.0;
             BD[EP0IN].address[0] = input.b[0];
             BD[EP0IN].address[1] = input.b[1];
             BD[EP0IN].bytecount = 2;
