@@ -23,11 +23,11 @@ circle = 0
 y1 = 145	#Defines the top and bottom of the position circle	
 y2 = 155
 
-joy_mode_spring = 1		#Defines the values for the switch case in PIC code
-joy_mode_wall = 0
-joy_mode_damper = 2
-joy_mode_texture = 3
-joy_mode_free = 4
+joy_mode_spring = 0x0001		#Defines the values for the switch case in PIC code
+joy_mode_wall = 0x0000
+joy_mode_damper = 0x0002
+joy_mode_texture = 0x0003
+joy_mode_free = 0x0004
 
 ELEFT = 0
 ERIGHT = 0
@@ -36,6 +36,9 @@ rightwall = 30
 
 EK = 0
 springk = 0.8
+
+EB = 0
+dampedb = 0
 
 # -----------------------------------------------------------------------
 # Main window functions
@@ -68,11 +71,7 @@ def springmode():
 	global joy_mode_spring
 	global EK
 
-	spmode = enc.joy_set_mode(joy_mode_spring)
-	
-	modeStr = ''.join(map(chr,spmode))
-	mode, = struct.unpack('h', modeStr)
-	print "Mode: {0:0f}".format(mode)
+	enc.joy_set_mode(joy_mode_spring)
 
 	# read the angle from the encoder
 	angleBytes = enc.joy_read_angle()
@@ -96,7 +95,7 @@ def springmode():
 
 	# create the canvas that the interface is drawn on
 	CS = tk.Canvas(spring, height=300, width=300)
-	circle = CS.create_oval(xcenter-5, y1, xcenter+5, y2, fill="red")
+	CS.create_oval(xcenter-5, y1, xcenter+5, y2, fill="red")
 
 	CS.pack()
 
@@ -159,12 +158,9 @@ def dampermode():
 	global y1
 	global y2
 	global joy_mode_damper
+	global EB
 
-	dmpmode = enc.joy_set_mode(joy_mode_damper)
-
-	value = ''.join(map(chr,dmpmode))
-	mode, = struct.unpack('h',value)
-	print "Mode:{0:0f}".format(mode)
+	enc.joy_set_mode(joy_mode_damper)
 
 	# read the angle from the encoder
 	angleBytes = enc.joy_read_angle()
@@ -173,11 +169,22 @@ def dampermode():
 
 	xcenter = 150 + angle*2   #set the center of the circle based on the angle reading
 
-	damper = tk.Tk()	# open the new window for damped mode interactions
+	damper = tk.Tk()	# open the new window for spring mode interactions
+
+	# create the parameter entry widgets for the spring constant
+	BLABEL = tk. Label(damper, text="Damping Constant")
+	BLABEL.pack()
+
+	EB = tk.Entry(damper, bd=5, width=10, textvariable=tk.StringVar())
+	EB.insert(0, 1)
+	EB.pack()
+
+	BGET = tk.Button(damper, text="Set Parameter", command=getb)
+	BGET.pack()
 
 	# create the canvas that the interface is drawn on
-	CD = tk.Canvas(damper, height=300, width=300)
-	circle = CD.create_oval(xcenter-5, y1, xcenter+5, y2, fill="red")
+	CD = tk.Canvas(damper, height=300, width=300, bg="blue")
+	CD.create_oval(xcenter-5, y1, xcenter+5, y2, fill="red")
 
 	CD.pack()
 
@@ -185,6 +192,42 @@ def dampermode():
 
 	OKDAMP.pack()
 
+	updateCD()
+
+def updateCD():
+	# assign the global variables that updateCD will use
+	global angle
+	global CD
+	global damper
+	global y1
+	global y2
+	global dampedb
+
+	# read the angle from the encoder
+	angleBytes = enc.joy_read_angle()
+	angleStr = ''.join(map(chr, angleBytes))
+	angle, = struct.unpack('f', angleStr)
+
+	xcenter = 150 + angle*2    # set the center of the circle based on the angle reading
+
+	CD.delete("all")  #clear the canvas
+
+	# redraw the canvas objects with the new circle position
+	CD.create_oval(xcenter-5, y1, xcenter+5, y2, fill="red")
+	
+	damper.after(16, updateCD)	# call updateCanvas again after 100ms
+
+
+def getb():
+	global EB
+	global dampedb
+
+	dampedb = float(EB.get())
+	bvalue = int(dampedb*1000)
+
+	enc.joy_set_b(bvalue)
+
+	print dampedb
 
 def quitdamper():
 	global damper
@@ -200,7 +243,6 @@ def wallmode():
 	# assign the global variables that wall mode will use
 	global CW
 	global wall
-	global circle
 	global angle
 	global y1
 	global y2
@@ -241,7 +283,7 @@ def wallmode():
 	CW = tk.Canvas(wall, height=300, width=300, bd=5)
 	CW.create_line(90, 50, 90, 250, width=3)
 	CW.create_line(210, 50, 210, 250, width=3)
-	circle = CW.create_oval(xcenter-5, y1, xcenter+5, y2, fill="red")
+	CW.create_oval(xcenter-5, y1, xcenter+5, y2, fill="red")
 
 	CW.pack()
 
@@ -313,11 +355,7 @@ def texturemode():
 	global y2
 	global joy_mode_texture
 
-	txmode = enc.joy_set_mode(joy_mode_texture)
-
-	value = ''.join(map(chr,txmode))
-	mode, = struct.unpack('h',value)
-	print "Mode:{0:0f}".format(mode)
+	enc.joy_set_mode(joy_mode_texture)
 
 	# read the angle from the encoder
 	angleBytes = enc.joy_read_angle()
@@ -330,13 +368,54 @@ def texturemode():
 
 	# create the canvas that the interface is drawn on
 	CT = tk.Canvas(texture, height=300, width=300)
-	circle = CT.create_oval(xcenter-5, y1, xcenter+5, y2, fill="red")
+	CT.create_oval(xcenter-5, y1, xcenter+5, y2, fill="red")
+
+	# create the texture regions
+	R1_start = -30
+	R1_stop = -10
+	R2_start = 10
+	R2_stop = 30
+
+	CT.create_polygon(150+R1_start*2, 50, 150+R1_stop*2, 50, 150+R1_stop*2, 250, 150+R1_start*2, 250, fill="blue")
+	CT.create_polygon(150+R2_start*2, 50, 150+R2_stop*2, 50, 150+R2_stop*2, 250, 150+R2_start*2, 250, fill="blue")
 
 	CT.pack()
 
 	OKTEXTURE = tk.Button(texture, text="Ok", command = quittexture)
 
 	OKTEXTURE.pack()
+
+	updateCT()
+
+def updateCT():
+	# assign the global variables that updateCD will use
+	global angle
+	global CT
+	global texture
+	global y1
+	global y2
+
+	# read the angle from the encoder
+	angleBytes = enc.joy_read_angle()
+	angleStr = ''.join(map(chr, angleBytes))
+	angle, = struct.unpack('f', angleStr)
+
+	xcenter = 150 + angle*2    # set the center of the circle based on the angle reading
+
+	CT.delete("all")  #clear the canvas
+
+	# create the texture regions
+	R1_start = -30
+	R1_stop = -10
+	R2_start = 10
+	R2_stop = 30
+
+	# redraw the canvas objects with the new circle position
+	CT.create_polygon(150+R1_start*2, 50, 150+R1_stop*2, 50, 150+R1_stop*2, 250, 150+R1_start*2, 250, fill="blue")
+	CT.create_polygon(150+R2_start*2, 50, 150+R2_stop*2, 50, 150+R2_stop*2, 250, 150+R2_start*2, 250, fill="blue")
+	CT.create_oval(xcenter-5, y1, xcenter+5, y2, fill="red")
+	
+	texture.after(16, updateCT)	# call updateCanvas again after 100ms
 
 
 def quittexture():
