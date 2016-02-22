@@ -38,7 +38,7 @@
 void init_joy(void);
 
 typedef struct {
-    uint8_t mode;
+    uint16_t mode;
 
     // spring
     float K;
