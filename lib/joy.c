@@ -113,7 +113,7 @@ void init_joy(void) {
 }
 
 void joy_init(_JOY *self, _TIMER *timer) {
-    self->mode = JOY_MODE_FREE;
+    self->mode = JOY_MODE_WALL;
 
     // spring
     self->K = 1.0;
