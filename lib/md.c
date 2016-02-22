@@ -41,11 +41,11 @@ void __md_setpins(_MD *self) {
 
 
 void init_md(void) {
-    md_init(&md1, &D[7], &D[8], 1.1e3, &oc7);
-    md_init(&md2, &D[6], &D[5], 1.1e3, &oc5);
+    md_init(&md1, &D[7], &D[8], 1.1e3, &oc7, &timer1);
+    md_init(&md2, &D[6], &D[5], 1.1e3, &oc5, &timer2);
 }
 
-void md_init(_MD *self, _PIN *pin1, _PIN *pin2, uint16_t freq, _OC *oc) {
+void md_init(_MD *self, _PIN *pin1, _PIN *pin2, uint16_t freq, _OC *oc, _TIMER *timer) {
     self->dir = 0;
     self->speed = 0;
     self->freq = freq;
@@ -54,6 +54,7 @@ void md_init(_MD *self, _PIN *pin1, _PIN *pin2, uint16_t freq, _OC *oc) {
     self->braked = 0;
     self->brakeType = 0;
     self->oc = oc;
+    self->timer = timer;
 
     oc_pwm(self->oc, self->pins[self->dir], &timer5, freq, 0);
     pin_clear(self->pins[!self->dir]);
@@ -81,6 +82,18 @@ void md_run(_MD *self) {
 
         __md_setpins(self);
     }
+}
+
+void __md_reset(_TIMER* timer) {
+    md_run(&md1);
+    md_run(&md2);
+    timer_cancel(timer);
+}
+
+void md_reset(_MD *self) {
+    md_brake(&md1);
+    md_brake(&md2);
+    timer_every(self->timer, 2e-3, __md_reset);
 }
 
 void md_brakeType(_MD *self, uint8_t type) {

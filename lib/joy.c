@@ -26,13 +26,13 @@
 #include <p24FJ128GB206.h>
 #include "joy.h"
 
-#define JOY_MODE_SPRING  0
-#define JOY_MODE_WALL    1
+#define JOY_MODE_WALL    0
+#define JOY_MODE_SPRING  1
 #define JOY_MODE_DAMPER  2
 #define JOY_MODE_TEXTURE 3
 #define JOY_MODE_FREE    4
 
-#define JOY_MAX_SPEED 0xFFFF
+#define JOY_MAX_SPEED 0xF000
 #define JOY_MIN_SPEED 0x0200
 // 360/(13.8096*16383)
 #define JOY_SCALE 0.001591
@@ -42,7 +42,6 @@
 #define JOY_STALL 3.0 // Amps
 #define JOY_R 5.0 // Ohms
 #define JOY_V 12.0 // Volts
-#define JOY_K 0.8
 
 #define JOY_DUTY(f) max(0x0000, (uint16_t)min(f*65535, 65535))
 
@@ -83,14 +82,15 @@ void __joy_loop(_TIMER *timer) {
         case JOY_MODE_TEXTURE:
             break;
         case JOY_MODE_FREE:
+            md_speed(&md1, 0);
             break;
     }
 }
 
 void __joy_spring(_JOY *self) {
-    joy.cur_set = joy.angle/45.0*JOY_STALL;
+    self->cur_set = self->angle/45.0*JOY_STALL;
 
-    md_velocity(&md1, JOY_DUTY(fabsf(joy.cur_set*JOY_K*JOY_R/JOY_V)), sign(joy.cur_set) < 0);
+    md_velocity(&md1, JOY_DUTY(fabsf(self->cur_set*self->K*JOY_R/JOY_V)), sign(self->cur_set) < 0);
 }
 
 void __joy_wall(_JOY *self) {
@@ -113,10 +113,10 @@ void init_joy(void) {
 }
 
 void joy_init(_JOY *self, _TIMER *timer) {
-    self->mode = 0;
+    self->mode = JOY_MODE_FREE;
 
     // spring
-    self->K = 1;
+    self->K = 1.0;
     // wall
     self->left = -30;
     self->right = 30;
