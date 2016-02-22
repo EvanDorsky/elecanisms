@@ -32,7 +32,7 @@
 #define JOY_MODE_TEXTURE 3
 #define JOY_MODE_FREE    4
 
-#define JOY_MAX_SPEED 0xFFFF
+#define JOY_MAX_SPEED 0xF000
 #define JOY_MIN_SPEED 0x0200
 // 360/(13.8096*16383)
 #define JOY_SCALE 0.001591
@@ -112,7 +112,7 @@ void init_joy(void) {
 }
 
 void joy_init(_JOY *self, _TIMER *timer) {
-    self->mode = 0;
+    self->mode = JOY_MODE_FREE;
 
     // spring
     self->K = 1.0;
