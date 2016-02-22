@@ -12,12 +12,15 @@ class encodertest:
         self.READ_SW2 = 9
         self.READ_SW3 = 10
         # self.WRITE_KS = 11
-        
+
         self.JOY_READ_ANGLE = 5
         self.JOY_SET_MODE = 20
         self.JOY_SET_K = 21
         self.JOY_SET_WALL_LEFT = 22
         self.JOY_SET_WALL_RIGHT = 23
+        self.JOY_SET_B = 24
+        self.JOY_READ_VEL = 25
+        self.JOY_READ_D = 26
 
         self.dev = usb.core.find(idVendor = 0x6666, idProduct = 0x0003)
         if self.dev is None:
@@ -124,5 +127,29 @@ class encodertest:
             ret = self.dev.ctrl_transfer(0xC0, self.JOY_SET_WALL_RIGHT, value, 0, 2)
         except usb.core.USBError:
             print "Could not send JOY_SET_WALL_RIGHT vendor request."
+        else:
+            return ret
+
+    def joy_set_b(self, value):
+        try:
+            ret = self.dev.ctrl_transfer(0xC0, self.JOY_SET_B, value, 0, 2)
+        except usb.core.USBError:
+            print "Could not send JOY_SET_B vendor request."
+        else:
+            return ret
+
+    def joy_read_vel(self):
+        try:
+            ret = self.dev.ctrl_transfer(0xC0, self.JOY_READ_VEL, 0, 0, 4)
+        except usb.core.USBError:
+            print "Could not send JOY_READ_VEL vendor request."
+        else:
+            return ret
+
+    def joy_read_d(self):
+        try:
+            ret = self.dev.ctrl_transfer(0xC0, self.JOY_READ_D, 0, 0, 4)
+        except usb.core.USBError:
+            print "Could not send JOY_READ_D vendor request."
         else:
             return ret
