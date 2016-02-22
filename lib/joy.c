@@ -73,6 +73,7 @@ void __joy_wrap_detect(_JOY *self) {
 void __joy_spring(_JOY *self);
 void __joy_wall(_JOY *self);
 void __joy_damp(_JOY *self);
+void __joy_texture(_JOY *self);
 
 void __joy_loop(_TIMER *timer) {
     __joy_wrap_detect(&joy);
@@ -94,6 +95,7 @@ void __joy_loop(_TIMER *timer) {
             __joy_damp(&joy);
             break;
         case JOY_MODE_TEXTURE:
+            __joy_texture(&joy);
             break;
         case JOY_MODE_FREE:
             md_speed(&md1, 0);
@@ -127,6 +129,25 @@ void __joy_damp(_JOY *self) {
     __vel = fabsf(self->vel);
     if (__vel > 20) {
         md_velocity(&md1, JOY_DUTY(__vel*self->B/1080.0), sign(self->vel) < 0);
+    }
+}
+float __dir = 0;
+float __ang = 0;
+void __joy_texture(_JOY *self) {
+    __vel = fabsf(self->vel);
+    __ang = self->angle;
+    // -30 - -10  10 - 30
+    if ((__ang > -30 && __ang < -10)||
+        (__ang > 10 && __ang < 30)) { // damping
+        __dir = 1;
+    } else { // positive feedback
+        __dir = -1;
+    }
+    if (__vel > 20) {
+        if (__dir > 0)
+            md_velocity(&md1, JOY_DUTY(__vel*7.0/1080.0), sign(self->vel) < 0);
+        else
+            md_velocity(&md1, JOY_DUTY(__vel*1.5/1080.0), sign(self->vel) < 0);
     }
 }
 
