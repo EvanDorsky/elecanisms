@@ -68,8 +68,6 @@ def springmode():
 
 	enc.joy_set_mode(joy_mode_spring)
 	
-	# int(1000*float(input))
-
 	# read the angle from the encoder
 	angleBytes = enc.joy_read_angle()
 	angleStr = ''.join(map(chr, angleBytes))
@@ -100,12 +98,41 @@ def springmode():
 
 	OKSPRING.pack()
 
+	updateCS()
+
+def updateCS():
+	# assign the global variables that updateCS will use
+	global angle
+	global CS
+	global spring
+	global y1
+	global y2
+	global springk
+
+	# read the angle from the encoder
+	angleBytes = enc.joy_read_angle()
+	angleStr = ''.join(map(chr, angleBytes))
+	angle, = struct.unpack('f', angleStr)
+
+	xcenter = 150 + angle*2    # set the center of the circle based on the angle reading
+
+	CS.delete("all")  #clear the canvas
+
+	# redraw the canvas objects with the new circle position
+	CS.create_line(150, 150, xcenter, 150, width=2)
+	CS.create_oval(xcenter-5, y1, xcenter+5, y2, fill="red")
+	
+	spring.after(16, updateCS)	# call updateCanvas again after 100ms
+
+
 def getspring():
 	global EK
 	global springk
 
 	springk = float(EK.get())
-	# enc.joy_set_wall_left(leftwall)
+	kvalue = int(springk*1000)
+
+	enc.joy_set_k(kvalue)
 
 	print springk
 
@@ -215,14 +242,13 @@ def wallmode():
 	OKWALL = tk.Button(wall, text="Ok", command = quitwall)
 	OKWALL.pack()
 
-	updateCanvas()  # call the update function to redraw the circle position
+	updateCW()  # call the update function to redraw the circle position
 
-def updateCanvas():
-	# assign the global variables that updateCanvas will use
+def updateCW():
+	# assign the global variables that updateCW will use
 	global angle
 	global CW
 	global wall
-	global circle
 	global y1
 	global y2
 	global leftwall
@@ -244,9 +270,9 @@ def updateCanvas():
 	# redraw the canvas objects with the new circle position
 	CW.create_line(leftx, 50, leftx, 250, width=3)
 	CW.create_line(rightx, 50, rightx, 250, width=3)
-	circle = CW.create_oval(xcenter-5, y1, xcenter+5, y2, fill="red")
+	CW.create_oval(xcenter-5, y1, xcenter+5, y2, fill="red")
 	
-	wall.after(16, updateCanvas)	# call updateCanvas again after 100ms
+	wall.after(16, updateCW)	# call updateCanvas again after 100ms
 
 def getwall():
 	global ELEFT
@@ -254,11 +280,11 @@ def getwall():
 	global leftwall
 	global rightwall
 
-	leftwall = float(ELEFT.get())
-	# enc.joy_set_wall_left(leftwall)
+	leftwall = int(ELEFT.get())
+	enc.joy_set_wall_left(leftwall)
 
-	rightwall = float(ERIGHT.get())
-	# enc.joy_set_wall_right(rightwall)
+	rightwall = int(ERIGHT.get())
+	enc.joy_set_wall_right(rightwall)
 
 	print leftwall
 	print rightwall
