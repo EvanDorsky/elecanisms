@@ -8,11 +8,12 @@ class encodertest:
         self.TOGGLE_LED1 = 1
         self.TOGGLE_LED2 = 2
         self.READ_SW1 = 3
-        self.JOY_READ_ANGLE = 5
         self.TOGGLE_LED3 = 8
         self.READ_SW2 = 9
         self.READ_SW3 = 10
         # self.WRITE_KS = 11
+        
+        self.JOY_READ_ANGLE = 5
         self.JOY_SET_MODE = 20
         self.JOY_SET_K = 21
         self.JOY_SET_WALL_LEFT = 22
