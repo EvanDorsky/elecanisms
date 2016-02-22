@@ -19,10 +19,12 @@ damper = 0
 wall = 0
 texture = 0
 circle = 0
+
 y1 = 145	#Defines the top and bottom of the position circle	
 y2 = 155
-joy_mode_spring = 0		#Defines the values for the switch case in PIC code
-joy_mode_wall = 1
+
+joy_mode_spring = 1		#Defines the values for the switch case in PIC code
+joy_mode_wall = 0
 joy_mode_damper = 2
 joy_mode_texture = 3
 joy_mode_free = 4
@@ -66,8 +68,12 @@ def springmode():
 	global joy_mode_spring
 	global EK
 
-	enc.joy_set_mode(joy_mode_spring)
+	spmode = enc.joy_set_mode(joy_mode_spring)
 	
+	modeStr = ''.join(map(chr,spmode))
+	mode, = struct.unpack('h', modeStr)
+	print "Mode: {0:0f}".format(mode)
+
 	# read the angle from the encoder
 	angleBytes = enc.joy_read_angle()
 	angleStr = ''.join(map(chr, angleBytes))
